@@ -1,4 +1,4 @@
-module groupie-blindtest
+module blindTest
 
 go 1.22
 
