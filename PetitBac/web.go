@@ -7,7 +7,7 @@ import (
 )
 
 type PageData struct {
-	Letter     string
+	lettre     string
 	Categories []string
 }
 
@@ -23,6 +23,7 @@ func main() {
 
 	// Route principale
 	http.HandleFunc("/", petitBacHandler)
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	log.Println("Serveur lancé sur http://localhost:8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
@@ -33,10 +34,10 @@ func main() {
 func petitBacHandler(w http.ResponseWriter, r *http.Request) {
 	// Utilisation de la logique définie dans logic.go
 	categories := GetCategories()
-	letter := GetRandomLetter()
+	lettre := GetRandomlettre()
 
 	data := PageData{
-		Letter:     string(letter),
+		lettre:     string(lettre),
 		Categories: categories,
 	}
 

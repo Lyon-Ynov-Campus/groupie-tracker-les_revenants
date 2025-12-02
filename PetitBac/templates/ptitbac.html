@@ -3,18 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Petit Bac en Go</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 2rem; }
-        h1 { margin-bottom: 0.5rem; }
-        .category { margin-bottom: 0.75rem; }
-        label { display: block; font-weight: bold; }
-        input[type="text"] { width: 300px; padding: 0.25rem; }
-        button { padding: 0.5rem 1rem; margin-top: 1rem; }
-    </style>
 </head>
 <body>
     <h1>Petit Bac</h1>
-    <p>La lettre tirée est : <strong>{{.Letter}}</strong></p>
+    <p>La lettre tirée est : <strong>{{.Lettre}}</strong></p>
 
     <form method="post" action="#">
         {{range $i, $cat := .Categories}}
