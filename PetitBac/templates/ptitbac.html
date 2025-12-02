@@ -3,19 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <title>Petit Bac en Go</title>
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <h1>Petit Bac</h1>
-    <p>La lettre tirée est : <strong>{{.Lettre}}</strong></p>
 
-    <form method="post" action="#">
-        {{range $i, $cat := .Categories}}
-        <div class="category">
-            <label for="cat{{$i}}">{{$cat}}</label>
-            <input type="text" id="cat{{$i}}" name="cat{{$i}}" placeholder="Réponse...">
-        </div>
-        {{end}}
-        <button type="submit">Valider</button>
-    </form>
+<h1>Petit Bac</h1>
+
+<table class="petit-bac-table">
+    <thead>
+        <tr>
+            <th>Lettre</th>
+            {{range $i, $cat := .Categories}}
+                <th>{{$cat}}</th>
+            {{end}}
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td class="letter-cell"><strong>{{.Letter}}</strong></td>
+            {{range $i, $cat := .Categories}}
+                <td>
+                    <input type="text"
+                           name="cat{{$i}}"
+                           placeholder="Réponse..."
+                           class="category-input">
+                </td>
+            {{end}}
+        </tr>
+    </tbody>
+</table>
+
 </body>
 </html>

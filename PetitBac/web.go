@@ -7,7 +7,7 @@ import (
 )
 
 type PageData struct {
-	lettre     string
+	Lettre     string
 	Categories []string
 }
 
@@ -37,7 +37,7 @@ func petitBacHandler(w http.ResponseWriter, r *http.Request) {
 	lettre := GetRandomlettre()
 
 	data := PageData{
-		lettre:     string(lettre),
+		Lettre:     string(lettre),
 		Categories: categories,
 	}
 
