@@ -85,7 +85,7 @@ func (bt *BlindTestEngine) Run(ctx context.Context) {
 	_, _ = bt.db.Exec(`UPDATE games SET started_at=? WHERE id=?`, time.Now(), bt.gameID)
 
 	for round := 0; round < bt.cfg.MaxRounds; round++ {
-		_ = bt.db.Exec(`UPDATE games SET current_round=? WHERE id=?`, round+1, bt.gameID)
+		_ = bt.db.Exec(`UPDATE games SET current_round = ? WHERE id = ?`, round+1, bt.gameID)
 		r := bt.startRound(round)
 
 		bt.hub.BroadcastJSON(ws.Message{
