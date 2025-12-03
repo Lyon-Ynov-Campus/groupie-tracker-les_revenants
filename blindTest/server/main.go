@@ -31,7 +31,7 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
 }
 
-var scoreboardActualPointInGame = map[int]int{} // userID -> points in current game
+var scoreboardActualPointInGame = map[int]int{}
 
 func main() {
 

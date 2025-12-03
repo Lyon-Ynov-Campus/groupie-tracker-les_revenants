@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 type Message struct {
@@ -66,7 +68,7 @@ type Client struct {
 
 func NewClient(hub *Hub, conn *websocket.Conn) *Client {
 	return &Client{
-		hub:  h,
+		hub:  hub,
 		conn: conn,
 		send: make(chan []byte, 256),
 	}
