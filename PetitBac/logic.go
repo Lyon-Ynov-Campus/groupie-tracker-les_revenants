@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-// GetCategories retourne la liste des catégories du Petit Bac
-func GetCategories() []string {
+// ObtenirCategories retourne la liste des categories du Petit Bac
+func ObtenirCategories() []string {
 	return []string{
 		"Artiste",
 		"Album",
@@ -16,28 +16,28 @@ func GetCategories() []string {
 	}
 }
 
-// GetRandomlettre retourne une lettre aléatoire entre 'A' et 'Z'
-func GetRandomlettre() rune {
+// ObtenirLettreAleatoire retourne une lettre aleatoire entre 'A' et 'Z'
+func ObtenirLettreAleatoire() rune {
 	return rune('A' + rand.Intn(26))
 }
 
-// ScoreAnswers calcule le nombre de réponses non vides
-func ScoreAnswers(answers map[string]string, categories []string) int {
+// CalculerScoreReponses calcule le nombre de reponses non vides
+func CalculerScoreReponses(reponses map[string]string, categories []string) int {
 	score := 0
-	for _, cat := range categories {
-		if strings.TrimSpace(answers[cat]) != "" {
+	for _, categorie := range categories {
+		if strings.TrimSpace(reponses[categorie]) != "" {
 			score++
 		}
 	}
 	return score
 }
 
-// IsValidForlettre vérifie qu'une réponse commence par la lettre donnée (sans tenir compte de la casse)
-func IsValidForlettre(answer string, lettre rune) bool {
-	answer = strings.TrimSpace(answer)
-	if answer == "" {
+// EstValidePourLettre verifie qu'une reponse commence par la lettre donnee (sans tenir compte de la casse)
+func EstValidePourLettre(reponse string, lettre rune) bool {
+	reponse = strings.TrimSpace(reponse)
+	if reponse == "" {
 		return false
 	}
-	firstRune := []rune(strings.ToUpper(answer))[0]
-	return firstRune == lettre
+	premiereRune := []rune(strings.ToUpper(reponse))[0]
+	return premiereRune == lettre
 }

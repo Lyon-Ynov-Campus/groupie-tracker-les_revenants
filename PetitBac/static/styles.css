@@ -21,32 +21,133 @@ button {
 button:hover {
     background-color: #0044cc;
 }
-.petit-bac-table {
+.tableau-petit-bac {
     border-collapse: collapse;
     width: 100%;
     margin-top: 20px;
 }
 
-.petit-bac-table th,
-.petit-bac-table td {
+.tableau-petit-bac th,
+.tableau-petit-bac td {
     border: 1px solid #ccc;
     padding: 12px;
     text-align: center;
 }
 
-.petit-bac-table th {
+.tableau-petit-bac th {
     background: #f0f0f0;
     font-weight: bold;
 }
 
-.letter-cell {
+.cellule-lettre {
     font-size: 1.3em;
     background: #eef6ff;
     width: 80px;
 }
 
-.category-input {
-    width: 90%;
-    padding: 6px;
+.entete-lettre p {
+    font-size: 1.2em;
+    margin-bottom: 1rem;
+}
+
+.formulaire-petit-bac {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.carte-joueur {
+    background: #fff;
+    border-radius: 6px;
+    padding: 1.2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.entete-joueur h2 {
+    margin: 0 0 0.5rem 0;
+}
+
+.entete-joueur label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 0.3rem;
+}
+
+.champ-nom {
+    width: 100%;
+    padding: 8px;
     font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.section-reponses {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.8rem;
+}
+
+.section-reponses label {
+    font-size: 0.9em;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.2rem;
+}
+
+.champ-categorie {
+    width: 100%;
+    padding: 8px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.bouton-principal {
+    background-color: #0066ff;
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    align-self: flex-start;
+}
+
+.bouton-principal:hover {
+    background-color: #0044cc;
+}
+
+.resultats {
+    margin-top: 2rem;
+    background: #fff;
+    border-radius: 6px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.liste-resultats {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.liste-resultats li {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.liste-resultats li:last-child {
+    border-bottom: none;
+}
+
+.resultat-joueur-nom {
+    font-weight: bold;
+}
+
+.resultat-joueur-score {
+    color: #0066ff;
 }

@@ -1,49 +1,114 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
+	"strings"
 )
 
-type PageData struct {
+const nombreJoueurs = 2
+
+type ResultatJoueur struct {
+	Indice int
+	Numero int
+	Nom    string
+	Score  int
+}
+
+type DonneesPage struct {
 	Lettre     string
 	Categories []string
+	Joueurs    []ResultatJoueur
+	Soumis     bool
 }
 
-var tmpl *template.Template
+var modeleHTML *template.Template
 
 func main() {
-	// Chargement du template HTML
-	var err error
-	tmpl, err = template.ParseFiles("templates/ptitbac.html")
-	if err != nil {
-		log.Fatalf("Erreur de chargement du template : %v", err)
+	var erreurChargement error
+	modeleHTML, erreurChargement = template.ParseFiles("templates/ptitbac.html")
+	if erreurChargement != nil {
+		log.Fatalf("Erreur de chargement du template : %v", erreurChargement)
 	}
 
-	// Route principale
-	http.HandleFunc("/", petitBacHandler)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	http.HandleFunc("/", gestionnairePetitBac)
 
-	log.Println("Serveur lancé sur http://localhost:8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatalf("Erreur serveur : %v", err)
+	log.Println("Serveur lance sur http://localhost:8080")
+	if erreurEcoute := http.ListenAndServe(":8080", nil); erreurEcoute != nil {
+		log.Fatalf("Erreur serveur : %v", erreurEcoute)
 	}
 }
 
-func petitBacHandler(w http.ResponseWriter, r *http.Request) {
-	// Utilisation de la logique définie dans logic.go
-	categories := GetCategories()
-	lettre := GetRandomlettre()
+func gestionnairePetitBac(reponse http.ResponseWriter, requete *http.Request) {
+	categories := ObtenirCategories()
+	lettreCourante := ObtenirLettreAleatoire()
+	joueurs := make([]ResultatJoueur, nombreJoueurs)
 
-	data := PageData{
-		Lettre:     string(lettre),
-		Categories: categories,
+	switch requete.Method {
+	case http.MethodGet:
+		for i := 0; i < nombreJoueurs; i++ {
+			joueurs[i] = ResultatJoueur{
+				Indice: i,
+				Numero: i + 1,
+			}
+		}
+
+	case http.MethodPost:
+		if err := requete.ParseForm(); err != nil {
+			http.Error(reponse, "Erreur de formulaire", http.StatusBadRequest)
+			return
+		}
+
+		lettreFormulaire := strings.TrimSpace(requete.FormValue("lettre"))
+		if lettreFormulaire != "" {
+			lettreMajuscule := strings.ToUpper(lettreFormulaire)
+			runes := []rune(lettreMajuscule)
+			if len(runes) > 0 {
+				lettreCourante = runes[0]
+			}
+		}
+
+		for i := 0; i < nombreJoueurs; i++ {
+			nom := requete.FormValue(fmt.Sprintf("joueur%d_nom", i))
+			reponses := make(map[string]string)
+
+			for j, categorie := range categories {
+				nomChamp := fmt.Sprintf("joueur%d_categorie%d", i, j)
+				reponses[categorie] = requete.FormValue(nomChamp)
+			}
+
+			score := 0
+			for _, categorie := range categories {
+				if EstValidePourLettre(reponses[categorie], lettreCourante) {
+					score++
+				}
+			}
+
+			joueurs[i] = ResultatJoueur{
+				Indice: i,
+				Numero: i + 1,
+				Nom:    nom,
+				Score:  score,
+			}
+		}
+
+	default:
+		http.Error(reponse, "Methode non supportee", http.StatusMethodNotAllowed)
+		return
 	}
 
-	if err := tmpl.Execute(w, data); err != nil {
-		http.Error(w, "Erreur interne", http.StatusInternalServerError)
+	donnees := DonneesPage{
+		Lettre:     string(lettreCourante),
+		Categories: categories,
+		Joueurs:    joueurs,
+		Soumis:     requete.Method == http.MethodPost,
+	}
+
+	if err := modeleHTML.Execute(reponse, donnees); err != nil {
+		http.Error(reponse, "Erreur interne", http.StatusInternalServerError)
 		log.Printf("Erreur template : %v", err)
-		return
 	}
 }

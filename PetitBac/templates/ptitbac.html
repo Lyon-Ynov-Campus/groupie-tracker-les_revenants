@@ -2,37 +2,65 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Petit Bac en Go</title>
+    <title>Petit Bac multijoueur</title>
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
 
-<h1>Petit Bac</h1>
+<h1>Petit Bac multijoueur</h1>
 
-<table class="petit-bac-table">
-    <thead>
-        <tr>
-            <th>Lettre</th>
-            {{range $i, $cat := .Categories}}
-                <th>{{$cat}}</th>
-            {{end}}
-        </tr>
-    </thead>
+<section class="entete-lettre">
+    <p>Lettre tiree : <span class="cellule-lettre">{{.Lettre}}</span></p>
+</section>
 
-    <tbody>
-        <tr>
-            <td class="lettre-cell"><strong>{{.Lettre}}</strong></td>
-            {{range $i, $cat := .Categories}}
-                <td>
-                    <input type="text"
-                           name="cat{{$i}}"
-                           placeholder="Réponse..."
-                           class="category-input">
-                </td>
+{{$page := .}}
+<form method="POST" class="formulaire-petit-bac">
+    <input type="hidden" name="lettre" value="{{.Lettre}}">
+
+    {{range $index, $joueur := $page.Joueurs}}
+    <div class="carte-joueur">
+        <div class="entete-joueur">
+            <h2>Joueur {{$joueur.Numero}}</h2>
+            <label for="joueur{{$joueur.Indice}}_nom">Pseudo</label>
+            <input type="text"
+                   id="joueur{{$joueur.Indice}}_nom"
+                   name="joueur{{$joueur.Indice}}_nom"
+                   value="{{$joueur.Nom}}"
+                   class="champ-nom"
+                   placeholder="Entre ton pseudo">
+        </div>
+
+        <div class="section-reponses">
+            {{range $indice, $categorie := $page.Categories}}
+                <label for="joueur{{$joueur.Indice}}_categorie{{$indice}}">{{$categorie}}</label>
+                <input type="text"
+                       id="joueur{{$joueur.Indice}}_categorie{{$indice}}"
+                       name="joueur{{$joueur.Indice}}_categorie{{$indice}}"
+                       class="champ-categorie"
+                       placeholder="Reponse...">
             {{end}}
-        </tr>
-    </tbody>
-</table>
+        </div>
+    </div>
+    {{end}}
+
+    <button type="submit" class="bouton-principal">Valider les reponses</button>
+</form>
+
+{{if .Soumis}}
+<section class="resultats">
+    <h2>Scores</h2>
+    <ul class="liste-resultats">
+        {{range $index, $joueur := $page.Joueurs}}
+        <li>
+            <span class="resultat-joueur-nom">
+                {{if $joueur.Nom}}{{$joueur.Nom}}{{else}}Joueur {{$joueur.Numero}}{{end}}
+            </span>
+            <span class="resultat-joueur-score">{{$joueur.Score}} point{{if ne $joueur.Score 1}}s{{end}}</span>
+        </li>
+        {{end}}
+    </ul>
+</section>
+{{end}}
 
 </body>
 </html>
