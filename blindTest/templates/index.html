@@ -1,11 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
-<body>
-  
-</body>
-</html>
+{{define "content"}}
+<section class="landing">
+  <div class="cards">
+    <article class="card">
+      <h2>Blind Test</h2>
+      <p class="desc">Choisis une des playlist !</p>
+      <form method="POST" action="/rooms/create" class="config">
+        <label>Playlist</label>
+        <select name="playlist">
+          <option>Rock</option>
+          <option>Rap</option>
+          <option>Pop</option>
+        </select>
+        <label>Temps par manche (s)</label>
+        <input type="number" name="time" value="37" min="5" max="120">
+        <label>Nombre de manches</label>
+        <input type="number" name="rounds" value="5" min="1" max="20">
+        <button type="submit" class="btn">Créer une salle</button>
+      </form>
+      <form method="POST" action="/rooms/join" class="join">
+        <label>Code de salle</label>
+        <input type="text" name="code" placeholder="ABC123">
+        <button type="submit" class="btn">Rejoindre</button>
+      </form>
+    </article>
+  </div>
+</section>
+{{end}}

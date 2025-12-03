@@ -1,11 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    
-</body>
-</html>
+{{define "content"}}
+<section class="room">
+  <h2>Salle Blind Test</h2>
+  <div class="meta">
+    <p><strong>Code:</strong> {{.RoomCode}}</p>
+    <p><strong>Playlist:</strong> {{.Config.Playlist}}</p>
+    <p><strong>Temps par manche:</strong> {{.Config.ResponseTimeSec}}s</p>
+    <p class="desc">{{.Description}}</p>
+  </div>
+
+  {{if eq .Status "waiting"}}
+  <form method="POST" action="/rooms/start">
+    <input type="hidden" name="room_id" value="{{.RoomID}}">
+    <button class="btn primary" type="submit">Démarrer la partie</button>
+  </form>
+  {{end}}
+
+  <div id="player" class="player">
+    <audio id="audio" controls></audio>
+    <div id="timer" class="timer">00:00</div>
+  </div>
+
+  <div class="answer">
+    <input id="answerInput" type="text" placeholder="Titre de la musique">
+    <button id="sendBtn" class="btn">Envoyer</button>
+  </div>
+
+  <div id="feedback" class="feedback"></div>
+
+  <div id="scoreboard" class="scoreboard">
+    <h3>Scores</h3>
+    <ul id="scoresList"></ul>
+  </div>
+
+  <script>
+    window.BLINDTEST_WS_URL = "{{.WSURL}}";
+</script>
+<script src="/static/js/script.js"></script>
+</section>
+{{end}}
