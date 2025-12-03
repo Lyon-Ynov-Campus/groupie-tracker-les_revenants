@@ -1,114 +1,196 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
-	"strings"
+	"sync"
+
+	"github.com/gorilla/websocket"
 )
 
-const nombreJoueurs = 2
+// --------- Types utilisés pour le WebSocket ---------
 
-type ResultatJoueur struct {
-	Indice int
-	Numero int
-	Nom    string
-	Score  int
+type Joueur struct {
+	Nom   string `json:"name"`
+	Score int    `json:"score"`
 }
 
+type MessageRecu struct {
+	Type     string            `json:"type"`     // "join" ou "answers"
+	Nom      string            `json:"name"`     // pour "join"
+	Reponses map[string]string `json:"answers"`  // pour "answers"
+}
+
+type EtatPartie struct {
+	Type       string   `json:"type"`       // "state"
+	Lettre     string   `json:"letter"`
+	Categories []string `json:"categories"`
+	Joueurs    []Joueur `json:"players"`
+}
+
+// --------- Variables globales ---------
+
+var (
+	modeleHTML *template.Template
+
+	upgrader = websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			// Pour un petit projet local, on autorise tout.
+			return true
+		},
+	}
+
+	mu         sync.Mutex
+	categories []string
+	lettre     rune
+
+	// Chaque connexion WebSocket est associée à un Joueur
+	clients = make(map[*websocket.Conn]*Joueur)
+)
+
+// Données pour le rendu de la page HTML (template)
 type DonneesPage struct {
 	Lettre     string
 	Categories []string
-	Joueurs    []ResultatJoueur
-	Soumis     bool
 }
-
-var modeleHTML *template.Template
 
 func main() {
-	var erreurChargement error
-	modeleHTML, erreurChargement = template.ParseFiles("templates/ptitbac.html")
-	if erreurChargement != nil {
-		log.Fatalf("Erreur de chargement du template : %v", erreurChargement)
+	var err error
+
+	// Logique de base : catégories + lettre
+	categories = ObtenirCategories()
+	lettre = ObtenirLettreAleatoire()
+
+	// Chargement du template HTML
+	modeleHTML, err = template.ParseFiles("templates/ptitbac.html")
+	if err != nil {
+		log.Fatalf("Erreur de chargement du template : %v", err)
 	}
 
+	// Fichiers statiques (CSS)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	http.HandleFunc("/", gestionnairePetitBac)
 
-	log.Println("Serveur lance sur http://localhost:8080")
-	if erreurEcoute := http.ListenAndServe(":8080", nil); erreurEcoute != nil {
-		log.Fatalf("Erreur serveur : %v", erreurEcoute)
+	// Page principale
+	http.HandleFunc("/", handlerPage)
+
+	// Endpoint WebSocket
+	http.HandleFunc("/ws", handlerWebSocket)
+
+	log.Println("Serveur lancé sur http://localhost:8080")
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Fatalf("Erreur serveur : %v", err)
 	}
 }
 
-func gestionnairePetitBac(reponse http.ResponseWriter, requete *http.Request) {
-	categories := ObtenirCategories()
-	lettreCourante := ObtenirLettreAleatoire()
-	joueurs := make([]ResultatJoueur, nombreJoueurs)
+// --------- HTTP : page HTML ---------
 
-	switch requete.Method {
-	case http.MethodGet:
-		for i := 0; i < nombreJoueurs; i++ {
-			joueurs[i] = ResultatJoueur{
-				Indice: i,
-				Numero: i + 1,
-			}
-		}
+func handlerPage(w http.ResponseWriter, r *http.Request) {
+	donnees := DonneesPage{
+		Lettre:     string(lettre),
+		Categories: categories,
+	}
 
-	case http.MethodPost:
-		if err := requete.ParseForm(); err != nil {
-			http.Error(reponse, "Erreur de formulaire", http.StatusBadRequest)
-			return
-		}
+	if err := modeleHTML.Execute(w, donnees); err != nil {
+		http.Error(w, "Erreur interne", http.StatusInternalServerError)
+		log.Printf("Erreur template : %v", err)
+	}
+}
 
-		lettreFormulaire := strings.TrimSpace(requete.FormValue("lettre"))
-		if lettreFormulaire != "" {
-			lettreMajuscule := strings.ToUpper(lettreFormulaire)
-			runes := []rune(lettreMajuscule)
-			if len(runes) > 0 {
-				lettreCourante = runes[0]
-			}
-		}
+// --------- WebSocket : multi-joueurs temps réel ---------
 
-		for i := 0; i < nombreJoueurs; i++ {
-			nom := requete.FormValue(fmt.Sprintf("joueur%d_nom", i))
-			reponses := make(map[string]string)
-
-			for j, categorie := range categories {
-				nomChamp := fmt.Sprintf("joueur%d_categorie%d", i, j)
-				reponses[categorie] = requete.FormValue(nomChamp)
-			}
-
-			score := 0
-			for _, categorie := range categories {
-				if EstValidePourLettre(reponses[categorie], lettreCourante) {
-					score++
-				}
-			}
-
-			joueurs[i] = ResultatJoueur{
-				Indice: i,
-				Numero: i + 1,
-				Nom:    nom,
-				Score:  score,
-			}
-		}
-
-	default:
-		http.Error(reponse, "Methode non supportee", http.StatusMethodNotAllowed)
+func handlerWebSocket(w http.ResponseWriter, r *http.Request) {
+	// Upgrade HTTP -> WebSocket
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Printf("Erreur upgrade WebSocket : %v", err)
 		return
 	}
 
-	donnees := DonneesPage{
-		Lettre:     string(lettreCourante),
+	// À la connexion, on crée un joueur "Anonyme"
+	mu.Lock()
+	clients[conn] = &Joueur{
+		Nom:   "Anonyme",
+		Score: 0,
+	}
+	mu.Unlock()
+
+	// On envoie l'état initial à tout le monde
+	diffuserEtat()
+
+	// Boucle de lecture : on attend les messages du client
+	go boucleLecture(conn)
+}
+
+func boucleLecture(conn *websocket.Conn) {
+	defer func() {
+		// À la déconnexion, on enlève le joueur et on diffuse l'état
+		mu.Lock()
+		delete(clients, conn)
+		mu.Unlock()
+		conn.Close()
+		diffuserEtat()
+	}()
+
+	for {
+		var msg MessageRecu
+		if err := conn.ReadJSON(&msg); err != nil {
+			log.Printf("Erreur lecture WebSocket : %v", err)
+			return
+		}
+
+		mu.Lock()
+		joueur, ok := clients[conn]
+		if !ok {
+			mu.Unlock()
+			return
+		}
+
+		switch msg.Type {
+		case "join":
+			// Mise à jour du pseudo
+			if msg.Nom != "" {
+				joueur.Nom = msg.Nom
+			}
+
+		case "answers":
+			// Calcul du score en fonction des réponses envoyées
+			score := 0
+			for cat, rep := range msg.Reponses {
+				// On utilise EstValidePourLettre de logic.go
+				if EstValidePourLettre(rep, lettre) {
+					score++
+				} else {
+					_ = cat // cat est dispo si tu veux logger
+				}
+			}
+			joueur.Score = score
+		}
+
+		mu.Unlock()
+
+		// Après chaque message, on renvoie l'état global à tout le monde
+		diffuserEtat()
+	}
+}
+
+func diffuserEtat() {
+	mu.Lock()
+	defer mu.Unlock()
+
+	etat := EtatPartie{
+		Type:       "state",
+		Lettre:     string(lettre),
 		Categories: categories,
-		Joueurs:    joueurs,
-		Soumis:     requete.Method == http.MethodPost,
 	}
 
-	if err := modeleHTML.Execute(reponse, donnees); err != nil {
-		http.Error(reponse, "Erreur interne", http.StatusInternalServerError)
-		log.Printf("Erreur template : %v", err)
+	for _, j := range clients {
+		etat.Joueurs = append(etat.Joueurs, *j)
+	}
+
+	for conn := range clients {
+		if err := conn.WriteJSON(etat); err != nil {
+			log.Printf("Erreur envoi WebSocket : %v", err)
+		}
 	}
 }

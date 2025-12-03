@@ -151,3 +151,18 @@ button:hover {
 .resultat-joueur-score {
     color: #0066ff;
 }
+
+
+
+.zone-joueur {
+    margin-top: 1.5rem;
+    background: #fff;
+    padding: 1rem 1.5rem;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.case-reponse {
+    display: flex;
+    flex-direction: column;
+}

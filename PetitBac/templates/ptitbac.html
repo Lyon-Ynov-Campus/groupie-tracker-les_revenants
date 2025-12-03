@@ -2,65 +2,150 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Petit Bac multijoueur</title>
+    <title>Petit Bac multijoueur – WebSocket</title>
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
 
-<h1>Petit Bac multijoueur</h1>
+<h1>Petit Bac multijoueur – temps réel</h1>
 
 <section class="entete-lettre">
-    <p>Lettre tiree : <span class="cellule-lettre">{{.Lettre}}</span></p>
+    <p>Lettre tirée : <span class="cellule-lettre" id="lettre-affichee">{{.Lettre}}</span></p>
 </section>
 
-{{$page := .}}
-<form method="POST" class="formulaire-petit-bac">
-    <input type="hidden" name="lettre" value="{{.Lettre}}">
+<section class="zone-joueur">
+    <h2>Ton plateau</h2>
 
-    {{range $index, $joueur := $page.Joueurs}}
-    <div class="carte-joueur">
+    <form id="form-joueur">
         <div class="entete-joueur">
-            <h2>Joueur {{$joueur.Numero}}</h2>
-            <label for="joueur{{$joueur.Indice}}_nom">Pseudo</label>
+            <label for="pseudo">Pseudo</label>
             <input type="text"
-                   id="joueur{{$joueur.Indice}}_nom"
-                   name="joueur{{$joueur.Indice}}_nom"
-                   value="{{$joueur.Nom}}"
+                   id="pseudo"
+                   name="pseudo"
                    class="champ-nom"
                    placeholder="Entre ton pseudo">
         </div>
 
         <div class="section-reponses">
-            {{range $indice, $categorie := $page.Categories}}
-                <label for="joueur{{$joueur.Indice}}_categorie{{$indice}}">{{$categorie}}</label>
-                <input type="text"
-                       id="joueur{{$joueur.Indice}}_categorie{{$indice}}"
-                       name="joueur{{$joueur.Indice}}_categorie{{$indice}}"
-                       class="champ-categorie"
-                       placeholder="Reponse...">
+            {{range $indice, $categorie := .Categories}}
+                <div class="case-reponse">
+                    <label for="cat{{$indice}}">{{$categorie}}</label>
+                    <input type="text"
+                           id="cat{{$indice}}"
+                           name="cat{{$indice}}"
+                           class="champ-categorie"
+                           data-categorie="{{$categorie}}"
+                           placeholder="Réponse...">
+                </div>
             {{end}}
         </div>
-    </div>
-    {{end}}
 
-    <button type="submit" class="bouton-principal">Valider les reponses</button>
-</form>
-
-{{if .Soumis}}
-<section class="resultats">
-    <h2>Scores</h2>
-    <ul class="liste-resultats">
-        {{range $index, $joueur := $page.Joueurs}}
-        <li>
-            <span class="resultat-joueur-nom">
-                {{if $joueur.Nom}}{{$joueur.Nom}}{{else}}Joueur {{$joueur.Numero}}{{end}}
-            </span>
-            <span class="resultat-joueur-score">{{$joueur.Score}} point{{if ne $joueur.Score 1}}s{{end}}</span>
-        </li>
-        {{end}}
-    </ul>
+        <button type="submit" class="bouton-principal">Envoyer mes réponses</button>
+    </form>
 </section>
-{{end}}
+
+<section class="resultats">
+    <h2>Scores des joueurs connectés</h2>
+    <table class="tableau-petit-bac" id="table-scores">
+        <thead>
+        <tr>
+            <th>Joueur</th>
+            <th>Score</th>
+        </tr>
+        </thead>
+        <tbody id="scores-body">
+        <!-- Rempli dynamiquement en JS -->
+        </tbody>
+    </table>
+</section>
+
+<script>
+    let socket = null;
+
+    function connecterWebSocket() {
+        const proto = (window.location.protocol === "https:") ? "wss://" : "ws://";
+        const url = proto + window.location.host + "/ws";
+        socket = new WebSocket(url);
+
+        socket.onopen = function () {
+            console.log("WebSocket connecté");
+        };
+
+        socket.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+            if (data.type === "state") {
+                mettreAJourEtat(data);
+            }
+        };
+
+        socket.onclose = function () {
+            console.log("WebSocket fermé");
+        };
+
+        socket.onerror = function (err) {
+            console.error("WebSocket erreur :", err);
+        };
+    }
+
+    function mettreAJourEtat(etat) {
+        // Met à jour la lettre (au cas où tu veux relancer une manche plus tard)
+        const lettreSpan = document.getElementById("lettre-affichee");
+        if (lettreSpan) {
+            lettreSpan.textContent = etat.letter;
+        }
+
+        // Met à jour le tableau des scores
+        const tbody = document.getElementById("scores-body");
+        tbody.innerHTML = "";
+
+        etat.players.forEach(function (p) {
+            const tr = document.createElement("tr");
+
+            const tdNom = document.createElement("td");
+            tdNom.textContent = p.name || "Anonyme";
+
+            const tdScore = document.createElement("td");
+            tdScore.textContent = p.score + " pt" + (p.score > 1 ? "s" : "");
+
+            tr.appendChild(tdNom);
+            tr.appendChild(tdScore);
+            tbody.appendChild(tr);
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        connecterWebSocket();
+
+        const form = document.getElementById("form-joueur");
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            if (!socket || socket.readyState !== WebSocket.OPEN) {
+                alert("Connexion WebSocket non disponible");
+                return;
+            }
+
+            const pseudo = document.getElementById("pseudo").value.trim();
+            if (pseudo !== "") {
+                socket.send(JSON.stringify({
+                    type: "join",
+                    name: pseudo
+                }));
+            }
+
+            const champs = document.querySelectorAll(".champ-categorie");
+            const answers = {};
+            champs.forEach(function (input) {
+                const categorie = input.dataset.categorie;
+                answers[categorie] = input.value;
+            });
+
+            socket.send(JSON.stringify({
+                type: "answers",
+                answers: answers
+            }));
+        });
+    });
+</script>
 
 </body>
 </html>
