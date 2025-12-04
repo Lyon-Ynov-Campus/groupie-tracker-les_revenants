@@ -3,53 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Groupie Tracker - Hello Kitty Edition</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Groupie Tracker - Hello Kitty x Metal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
 
-    <nav class="glass-nav">
-        <div class="logo-container">
-            <img src="/static/img/logo.png" alt="Logo Groupie Tracker" class="bounce-logo">
-            <span>Groupie Tracker</span>
-        </div>
-        <div class="nav-links">
-            <a href="/login" class="btn-secondary">Connexion</a>
-            <a href="/register" class="btn-primary">S'inscrire 🎀</a>
-        </div>
-    </nav>
-
-    <header class="hero">
-        <div class="hero-content">
-            <h1 class="glow-text">La Musique <br> C'est la Vie !</h1>
-            <p>Rejoins la commu la plus mignonne pour tester tes connaissances musicales.</p>
-            <a href="#games" class="btn-giant">JOUER MAINTENANT ✨</a>
-        </div>
-    </header>
-
-    <section id="games" class="games-section">
-        <h2 class="section-title">Nos Jeux Incroyables</h2>
+    <div class="cute-zone-wrapper">
         
-        <div class="cards-container">
-            <div class="game-card pink-card">
-                <div class="icon">🎵</div>
-                <h3>Blind Test</h3>
-                <p>Devine le titre le plus vite possible ! Rap, Rock ou Pop ?</p>
-                <button class="btn-play">Lancer la salle</button>
+        <nav class="glass-nav">
+            <div class="logo-container">
+                <img src="/static/img/logo.png" alt="Logo Groupie Tracker" class="bounce-logo">
             </div>
 
-            <div class="game-card blue-card">
-                <div class="icon">📝</div>
-                <h3>Petit Bac</h3>
-                <p>Trouve un Artiste, un Album et un Groupe avec une lettre donnée.</p>
-                <button class="btn-play">Lancer la salle</button>
+            <h1 class="nav-title">Groupie Tracker</h1>
+
+            <div class="nav-links">
+                <a href="/login" class="btn-secondary">Connexion</a>
+                <a href="/register" class="btn-primary">S'inscrire 🎀</a>
+            </div>
+        </nav>
+
+        <header class="hero">
+            <div class="hero-content">
+                <h1 class="glow-text">
+                    Musique ! 
+                    <img src="/static/img/metal.png" alt="Metal Hello Kitty" class="title-img">
+                </h1>
+                <a href="#games" class="btn-giant">JOUER MAINTENANT ✨</a>
+            </div>
+        </header>
+
+    </div> <div class="dark-metal-bar">
+        <img src="/static/img/heavy.png" class="heavy-img left" alt="Heavy Metal">
+        <p class="metal-text">REJOINS LA COMMU LA PLUS CUTE DU MONDE</p>
+        <img src="/static/img/heavy.png" class="heavy-img right" alt="Heavy Metal">
+    </div>
+
+    <section id="games" class="games-section dark-mode">
+        <h2 class="section-title metal-title">NOS JEUX DE L'ENFER</h2>
+        
+        <div class="cards-container">
+            <div class="game-card metal-card blood-card">
+                <img src="/static/img/skull.png" alt="Skull" class="metal-icon-img">
+                <h3>BLIND TEST DE LA MORT</h3>
+                <p>Devine le titre avant que ta tête n'explose. Riffs rapides uniquement.</p>
+                <button class="btn-metal btn-blood">ENTRER DANS LA FOSSE</button>
+            </div>
+
+            <div class="game-card metal-card doom-card">
+                <img src="/static/img/pentagram.png" alt="Pentagram" class="metal-icon-img">
+                <h3>PETIT BAC MAUDIT</h3>
+                <p>Trouve des groupes obscurs avec la lettre de la bête.</p>
+                <button class="btn-metal btn-doom">INVOQUER LA SALLE</button>
             </div>
         </div>
     </section>
 
-    <footer>
-        <p>Fabriqué avec 💖 et du Golang</p>
+    <footer class="dark-footer">
+        <p>🤘 A FAIRE 🤘</p>
     </footer>
 
 </body>
