@@ -1,0 +1,31 @@
+{{define "title"}}Créer une salle{{end}}
+{{template "layout.html" .}}
+{{define "content"}}
+<section class="card">
+    <h2>Créer une salle</h2>
+    <form action="/rooms/new" method="post">
+        <label for="playlist">Playlist</label>
+        <select id="playlist" name="playlist" required aria-describedby="playlist-desc">
+            {{range .Playlists}}<option value="{{.}}">{{.}}</option>{{end}}
+        </select>
+        <p id="playlist-desc" class="muted">Choisis une des playlist !</p>
+        
+        <label for="responseTime">Temps de réponse (secondes)</label>
+        <input id="responseTime" name="responseTime" type="number" value="{{.DefaultResponseTime}}" min="5" max="120" required />
+        
+        <label for="maxRounds">Nombre de manches</label>
+        <input id="maxRounds" name="maxRounds" type="number" value="10" min="1" max="50" required />
+        
+        <button type="submit">Créer</button>
+    </form>
+</section>
+
+<section class="card">
+    <h2>Rejoindre une salle</h2>
+    <form action="/rooms/join" method="post">
+        <label for="code">Code de salle</label>
+        <input id="code" name="code" type="text" required />
+        <button type="submit">Rejoindre</button>
+    </form>
+</section>
+{{end}}

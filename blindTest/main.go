@@ -1,1 +1,1 @@
-package blindtest
+package main
