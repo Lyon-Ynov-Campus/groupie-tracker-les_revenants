@@ -10,7 +10,14 @@
 <h1>Petit Bac multijoueur – temps réel</h1>
 
 <section class="entete-lettre">
-    <p>Lettre tirée : <span class="cellule-lettre" id="lettre-affichee">{{.Lettre}}</span></p>
+    <p>
+        Lettre tirée :
+        <span class="cellule-lettre" id="lettre-affichee">{{.Lettre}}</span>
+    </p>
+    <p>
+        Temps restant :
+        <span id="timer-affiche">01:30</span>
+    </p>
 </section>
 
 <section class="zone-joueur">
@@ -40,8 +47,10 @@
             {{end}}
         </div>
 
-        <button type="submit" class="bouton-principal">Envoyer mes réponses</button>
+        <button type="submit" class="bouton-principal" id="btn-send">Envoyer mes réponses</button>
     </form>
+
+    <p id="message-manche" style="margin-top:1rem;font-weight:bold;"></p>
 </section>
 
 <section class="resultats">
@@ -54,7 +63,6 @@
         </tr>
         </thead>
         <tbody id="scores-body">
-        <!-- Rempli dynamiquement en JS -->
         </tbody>
     </table>
 </section>
@@ -87,17 +95,45 @@
         };
     }
 
+    function formatTemps(sec) {
+        const m = Math.floor(sec / 60);
+        const s = sec % 60;
+        return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+    }
+
+    function enableForm(enabled) {
+        const inputs = document.querySelectorAll(".champ-nom, .champ-categorie, #btn-send");
+        inputs.forEach(el => {
+            el.disabled = !enabled;
+        });
+    }
+
     function mettreAJourEtat(etat) {
-        // Met à jour la lettre (au cas où tu veux relancer une manche plus tard)
+        // Lettre (au cas où la manche change dans le futur)
         const lettreSpan = document.getElementById("lettre-affichee");
         if (lettreSpan) {
             lettreSpan.textContent = etat.letter;
         }
 
-        // Met à jour le tableau des scores
+        // Timer
+        const timerSpan = document.getElementById("timer-affiche");
+        if (timerSpan) {
+            timerSpan.textContent = formatTemps(etat.remainingSeconds);
+        }
+
+        // Actif ou pas ?
+        const msg = document.getElementById("message-manche");
+        if (etat.roundActive) {
+            enableForm(true);
+            if (msg) msg.textContent = "";
+        } else {
+            enableForm(false);
+            if (msg) msg.textContent = "Manche terminée ! (un joueur a tout rempli ou le temps est écoulé)";
+        }
+
+        // Scores
         const tbody = document.getElementById("scores-body");
         tbody.innerHTML = "";
-
         etat.players.forEach(function (p) {
             const tr = document.createElement("tr");
 

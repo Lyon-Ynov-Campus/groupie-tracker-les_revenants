@@ -41,3 +41,36 @@ func EstValidePourLettre(reponse string, lettre rune) bool {
 	premiereRune := []rune(strings.ToUpper(reponse))[0]
 	return premiereRune == lettre
 }
+
+// CalculerScoresCollectifs attribue 0/1/2 points selon la presence et l'unicite des reponses
+func CalculerScoresCollectifs(reponsesJoueurs []map[string]string, categories []string, lettre rune) []int {
+	scores := make([]int, len(reponsesJoueurs))
+	for _, categorie := range categories {
+		occurences := make(map[string]int)
+		reponsesValides := make([]bool, len(reponsesJoueurs))
+		reponsesNormalisees := make([]string, len(reponsesJoueurs))
+
+		for indiceJoueur, reponses := range reponsesJoueurs {
+			reponse := reponses[categorie]
+			if EstValidePourLettre(reponse, lettre) {
+				normalisee := strings.ToUpper(strings.TrimSpace(reponse))
+				occurences[normalisee]++
+				reponsesValides[indiceJoueur] = true
+				reponsesNormalisees[indiceJoueur] = normalisee
+			}
+		}
+
+		for indiceJoueur := range reponsesJoueurs {
+			if !reponsesValides[indiceJoueur] {
+				continue
+			}
+			if occurences[reponsesNormalisees[indiceJoueur]] == 1 {
+				scores[indiceJoueur] += 2
+			} else {
+				scores[indiceJoueur]++
+			}
+		}
+	}
+
+	return scores
+}
