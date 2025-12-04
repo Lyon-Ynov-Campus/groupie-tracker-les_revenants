@@ -1,0 +1,165 @@
+/* --- Variables Hello Kitty & Configuration --- */
+:root {
+    --hk-hot-pink: #ff69b4;
+    --hk-soft-pink: #ffb7c5;
+    --hk-white: #ffffff;
+    --hk-blue: #89cff0; /* Pour le contraste (la salopette de Kitty) */
+    --hk-text: #5a2a42;
+    --glass: rgba(255, 255, 255, 0.7);
+    --shadow: 0 8px 32px 0 rgba(255, 105, 180, 0.37);
+}
+
+body {
+    margin: 0;
+    font-family: 'Fredoka', sans-serif;
+    background: linear-gradient(135deg, #fff0f5 0%, #ffe4e1 100%);
+    color: var(--hk-text);
+    overflow-x: hidden;
+}
+
+/* --- Navigation Glassmorphism --- */
+.glass-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    border-bottom: 2px solid var(--hk-soft-pink);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    font-size: 1.5rem;
+    color: var(--hk-hot-pink);
+}
+
+.bounce-logo {
+    height: 50px;
+    margin-right: 15px;
+    animation: bounce 2s infinite;
+}
+
+/* --- Hero Section --- */
+.hero {
+    height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background-image: radial-gradient(var(--hk-soft-pink) 2px, transparent 2px);
+    background-size: 30px 30px; /* Motif à pois */
+}
+
+.hero h1 {
+    font-size: 4rem;
+    margin-bottom: 0.5rem;
+    color: var(--hk-hot-pink);
+    text-shadow: 2px 2px 0px #fff, 4px 4px 0px var(--hk-blue);
+}
+
+.hero p {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* --- Boutons --- */
+.btn-primary, .btn-giant, .btn-play {
+    background: var(--hk-hot-pink);
+    color: white;
+    padding: 10px 25px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 15px rgba(255, 105, 180, 0.4);
+}
+
+.btn-giant {
+    padding: 20px 50px;
+    font-size: 1.5rem;
+}
+
+.btn-secondary {
+    color: var(--hk-hot-pink);
+    text-decoration: none;
+    margin-right: 20px;
+    font-weight: bold;
+}
+
+.btn-primary:hover, .btn-giant:hover {
+    transform: scale(1.05) rotate(-2deg);
+    background: #ff1493;
+}
+
+/* --- Cartes de Jeux --- */
+.games-section {
+    padding: 4rem 2rem;
+    text-align: center;
+    background: white;
+    border-radius: 50px 50px 0 0;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
+}
+
+.section-title {
+    color: var(--hk-hot-pink);
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+}
+
+.cards-container {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    flex-wrap: wrap;
+}
+
+.game-card {
+    background: white;
+    border-radius: 30px;
+    padding: 2rem;
+    width: 300px;
+    border: 3px solid;
+    transition: transform 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.game-card:hover {
+    transform: translateY(-10px);
+}
+
+.pink-card {
+    border-color: var(--hk-hot-pink);
+    box-shadow: 10px 10px 0px var(--hk-soft-pink);
+}
+
+.blue-card {
+    border-color: var(--hk-blue);
+    box-shadow: 10px 10px 0px var(--hk-blue);
+}
+
+.icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: float 3s ease-in-out infinite;
+}
+
+/* --- Animations CSS (Autorisées par le sujet ) --- */
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+    100% { transform: translateY(0px); }
+}
