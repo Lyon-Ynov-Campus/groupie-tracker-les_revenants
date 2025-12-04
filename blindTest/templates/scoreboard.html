@@ -1,0 +1,12 @@
+{{define "title"}}Scoreboard{{end}}
+{{template "layout.html" .}}
+{{define "content"}}
+<section class="card">
+  <h2>Scoreboard final</h2>
+  <ol>
+    {{range .}}
+      <li><strong>{{.Pseudo}}</strong> — {{.Points}} pts</li>
+    {{end}}
+  </ol>
+</section>
+{{end}}
