@@ -42,9 +42,16 @@ func EstValidePourLettre(reponse string, lettre rune) bool {
 	return premiereRune == lettre
 }
 
-// CalculerScoresCollectifs attribue 0/1/2 points selon la presence et l'unicite des reponses
+// CalculerScoresCollectifs attribue 0/1/2 points selon la presence et l'unicite des reponses.
+// Une reponse n'est consideree valide que si elle obtient au moins 2/3 de validations (joueurs actifs).
 func CalculerScoresCollectifs(reponsesJoueurs []map[string]string, categories []string, lettre rune) []int {
 	scores := make([]int, len(reponsesJoueurs))
+	if len(reponsesJoueurs) == 0 {
+		return scores
+	}
+
+	seuilValidations := (2*len(reponsesJoueurs) + 2) / 3 // ceil(2/3 * n)
+
 	for _, categorie := range categories {
 		occurences := make(map[string]int)
 		reponsesValides := make([]bool, len(reponsesJoueurs))
@@ -62,6 +69,9 @@ func CalculerScoresCollectifs(reponsesJoueurs []map[string]string, categories []
 
 		for indiceJoueur := range reponsesJoueurs {
 			if !reponsesValides[indiceJoueur] {
+				continue
+			}
+			if occurences[reponsesNormalisees[indiceJoueur]] < seuilValidations {
 				continue
 			}
 			if occurences[reponsesNormalisees[indiceJoueur]] == 1 {

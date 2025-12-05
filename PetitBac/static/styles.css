@@ -2,70 +2,79 @@ body {
     background: #f4f4f4;
     font-family: Arial, sans-serif;
     padding: 2rem;
+    color: #222;
 }
 
 h1 {
-    color: #333;
+    color: #222;
+    margin-bottom: 1rem;
 }
 
 button {
-    background-color: #0066ff;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    margin-top: 1rem;
     cursor: pointer;
+    border: none;
     border-radius: 4px;
+    padding: 10px 20px;
+    font-size: 1rem;
 }
 
-button:hover {
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.bouton-principal {
+    background-color: #0066ff;
+    color: #fff;
+    margin-top: 1rem;
+}
+
+.bouton-principal:hover:not(:disabled) {
     background-color: #0044cc;
 }
-.tableau-petit-bac {
-    border-collapse: collapse;
-    width: 100%;
-    margin-top: 20px;
+
+.bouton-secondaire {
+    background-color: #fff;
+    color: #0066ff;
+    border: 1px solid #0066ff;
+    margin-top: 0.5rem;
 }
 
-.tableau-petit-bac th,
-.tableau-petit-bac td {
-    border: 1px solid #ccc;
-    padding: 12px;
-    text-align: center;
+.bouton-secondaire:hover:not(:disabled) {
+    background-color: #eef3ff;
 }
 
-.tableau-petit-bac th {
-    background: #f0f0f0;
-    font-weight: bold;
+.entete-lettre p {
+    font-size: 1.2em;
+    margin-bottom: 0.3rem;
+}
+
+.info-manches {
+    font-size: 1rem;
+    color: #444;
 }
 
 .cellule-lettre {
     font-size: 1.3em;
     background: #eef6ff;
-    width: 80px;
+    padding: 0.2rem 0.8rem;
+    border-radius: 4px;
+    display: inline-block;
 }
 
-.entete-lettre p {
-    font-size: 1.2em;
-    margin-bottom: 1rem;
-}
-
-.formulaire-petit-bac {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    margin-top: 1rem;
-}
-
-.carte-joueur {
+.zone-joueur,
+.zone-preparation,
+.configuration-partie,
+.resultats {
     background: #fff;
     border-radius: 6px;
-    padding: 1.2rem;
+    padding: 1.2rem 1.5rem;
+    margin-top: 1.5rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.entete-joueur h2 {
-    margin: 0 0 0.5rem 0;
+.zone-preparation {
+    display: none;
 }
 
 .entete-joueur label {
@@ -89,11 +98,11 @@ button:hover {
     gap: 0.8rem;
 }
 
-.section-reponses label {
+.case-reponse label {
     font-size: 0.9em;
     font-weight: 600;
     display: block;
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.3rem;
 }
 
 .champ-categorie {
@@ -104,65 +113,59 @@ button:hover {
     border-radius: 4px;
 }
 
-.bouton-principal {
-    background-color: #0066ff;
-    color: #fff;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
-    align-self: flex-start;
-}
-
-.bouton-principal:hover {
-    background-color: #0044cc;
-}
-
-.resultats {
-    margin-top: 2rem;
-    background: #fff;
-    border-radius: 6px;
-    padding: 1rem 1.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.liste-resultats {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.liste-resultats li {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #eee;
-}
-
-.liste-resultats li:last-child {
-    border-bottom: none;
-}
-
-.resultat-joueur-nom {
+.message-manche {
+    margin-top: 1rem;
     font-weight: bold;
+    min-height: 1.5rem;
 }
 
-.resultat-joueur-score {
-    color: #0066ff;
+.info-validation {
+    margin-top: 0.3rem;
+    font-size: 0.9rem;
+    color: #555;
 }
 
-
-
-.zone-joueur {
-    margin-top: 1.5rem;
-    background: #fff;
-    padding: 1rem 1.5rem;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-
-.case-reponse {
+.configuration-partie form {
     display: flex;
     flex-direction: column;
+    gap: 0.8rem;
+}
+
+.champ-config label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+}
+
+.champ-config input,
+.champ-config textarea {
+    width: 100%;
+    padding: 8px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.config-message {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #0a6b1f;
+}
+
+.tableau-petit-bac {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.tableau-petit-bac th,
+.tableau-petit-bac td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: center;
+}
+
+.tableau-petit-bac th {
+    background: #f5f5f5;
+    font-weight: bold;
 }
