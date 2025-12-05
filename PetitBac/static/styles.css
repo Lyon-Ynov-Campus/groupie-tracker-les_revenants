@@ -106,7 +106,7 @@ button:disabled {
 }
 
 .champ-categorie {
-    width: 100%;
+    width: 25%;
     padding: 8px;
     font-size: 1em;
     border: 1px solid #ccc;
