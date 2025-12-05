@@ -84,7 +84,7 @@ func main() {
 	configuration = ParametresPartie{
 		Categories:   ObtenirCategories(),
 		TempsManche:  90,
-		NombreManche: nbrs_manche,
+		NombreManche: 5,
 	}
 	lettreCourante = ObtenirLettreAleatoire()
 
@@ -188,7 +188,11 @@ func handlerConfiguration(w http.ResponseWriter, r *http.Request) {
 		payload.Temps = 15
 	}
 	if payload.Manches <= 0 {
-		payload.Manches = nbrs_manche
+		if configuration.NombreManche > 0 {
+			payload.Manches = configuration.NombreManche
+		} else {
+			payload.Manches = 5
+		}
 	}
 
 	mu.Lock()
