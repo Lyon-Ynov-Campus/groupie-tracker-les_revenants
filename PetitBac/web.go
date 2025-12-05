@@ -13,303 +13,257 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type Joueur struct {
-	ID         string            `json:"id"`
-	Nom        string            `json:"name"`
-	Score      int               `json:"score"`
-	ScoreTotal int               `json:"totalScore"`
-	Reponses   map[string]string `json:"-"`
-	Pret       bool              `json:"ready"`
-	Actif      bool              `json:"active"`
+type joueurDonnees struct {
+	ID       string            `json:"id"`
+	Nom      string            `json:"name"`
+	Score    int               `json:"score"`
+	Total    int               `json:"totalScore"`
+	Reponses map[string]string `json:"-"`
+	Pret     bool              `json:"ready"`
+	Actif    bool              `json:"active"`
 }
 
-type MessageRecu struct {
-	Type     string            `json:"type"`    // "join", "answers", "ready"
-	Nom      string            `json:"name"`    // pour "join"
-	Reponses map[string]string `json:"answers"` // pour "answers"
+type messageJeu struct {
+	Type     string            `json:"type"`
+	Nom      string            `json:"name"`
+	Reponses map[string]string `json:"answers"`
 }
 
-type EtatPartie struct {
-	Type                   string   `json:"type"`
-	Lettre                 string   `json:"letter"`
-	Categories             []string `json:"categories"`
-	Joueurs                []Joueur `json:"players"`
-	RemainingSecond        int      `json:"remainingSeconds"`
-	RoundActive            bool     `json:"roundActive"`
-	WaitingRestart         bool     `json:"waitingRestart"`
-	ReadyCount             int      `json:"readyCount"`
-	ReadyTotal             int      `json:"readyTotal"`
-	ActivePlayersThisRound int      `json:"activePlayers"`
-	ManchesJouees          int      `json:"roundNumber"`
-	ManchesMaximum         int      `json:"roundLimit"`
-	PartieTerminee         bool     `json:"gameOver"`
-	TempsParManche         int      `json:"roundDuration"`
+type paquetEtat struct {
+	Type           string          `json:"type"`
+	Lettre         string          `json:"letter"`
+	Categories     []string        `json:"categories"`
+	Joueurs        []joueurDonnees `json:"players"`
+	Secondes       int             `json:"remainingSeconds"`
+	MancheActive   bool            `json:"roundActive"`
+	Attente        bool            `json:"waitingRestart"`
+	CompteurPrets  int             `json:"readyCount"`
+	CompteurTotal  int             `json:"readyTotal"`
+	Actifs         int             `json:"activePlayers"`
+	NumeroManche   int             `json:"roundNumber"`
+	LimiteManches  int             `json:"roundLimit"`
+	JeuTermine     bool            `json:"gameOver"`
+	TempsParManche int             `json:"roundDuration"`
 }
 
-type DonneesPage struct {
+type donneesPage struct {
 	Lettre          string
 	Categories      []string
 	TempsParManche  int
 	NombreDeManches int
 }
 
-type ParametresPartie struct {
-	Categories   []string
-	TempsManche  int
-	NombreManche int
-}
-
-var (
-	modeleHTML *template.Template
-
-	upgrader = websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool { return true },
-	}
-
-	mu               sync.Mutex
-	configuration    ParametresPartie
-	lettreCourante   rune
-	clients          = make(map[*websocket.Conn]*Joueur)
-	remainingSeconds int
-	roundActive      bool
-	attenteRejouer   bool
-	partieTerminee   bool
-	manchesJouees    int
-	compteurJoueur   int
-)
-
-func main() {
-	var err error
-
-	configuration = ParametresPartie{
-		Categories:   ObtenirCategories(),
-		TempsManche:  90,
-		NombreManche: 5,
-	}
-	lettreCourante = ObtenirLettreAleatoire()
-
-	modeleHTML, err = template.ParseFiles("templates/ptitbac.html")
-	if err != nil {
-		log.Fatalf("Erreur de chargement du template : %v", err)
-	}
-
-	// ressources statiques
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	http.HandleFunc("/", handlerPage)
-	http.HandleFunc("/ws", handlerWebSocket)
-	http.HandleFunc("/config", handlerConfiguration)
-
-	// première manche automatique
-	demarrerNouvelleMancheAvecSelection(false)
-
-	log.Println("Serveur lancé sur http://localhost:8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatalf("Erreur serveur : %v", err)
-	}
-}
-
-func handlerPage(w http.ResponseWriter, r *http.Request) {
-	d := DonneesPage{
-		Lettre:          string(lettreCourante),
-		Categories:      append([]string(nil), configuration.Categories...),
-		TempsParManche:  configuration.TempsManche,
-		NombreDeManches: configuration.NombreManche,
-	}
-	if err := modeleHTML.Execute(w, d); err != nil {
-		http.Error(w, "Erreur interne", http.StatusInternalServerError)
-		log.Printf("Erreur template : %v", err)
-	}
-}
-
-func handlerWebSocket(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Printf("Erreur upgrade WebSocket : %v", err)
-		return
-	}
-
-	mu.Lock()
-	compteurJoueur++
-	joueur := &Joueur{
-		ID:         "joueur-" + strconv.Itoa(compteurJoueur),
-		Nom:        "Anonyme",
-		Score:      0,
-		ScoreTotal: 0,
-		Reponses:   make(map[string]string),
-		Pret:       false,
-		Actif:      roundActive && !partieTerminee,
-	}
-	clients[conn] = joueur
-	mu.Unlock()
-
-	// envoie l'identifiant au client
-	if err := conn.WriteJSON(map[string]string{
-		"type": "identity",
-		"id":   joueur.ID,
-	}); err != nil {
-		log.Printf("Erreur envoi identité : %v", err)
-	}
-
-	diffuserEtat()
-
-	go boucleLecture(conn)
-}
-
-type requeteConfiguration struct {
+type reglageJeu struct {
 	Categories []string `json:"categories"`
 	Temps      int      `json:"temps"`
 	Manches    int      `json:"manches"`
 }
 
-func handlerConfiguration(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Methode non supportee", http.StatusMethodNotAllowed)
+var (
+	tplJeu          *template.Template
+	monterWS        = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }}
+	mu              sync.Mutex
+	reglages        reglageJeu
+	lettreActu      rune
+	joueurs         = make(map[*websocket.Conn]*joueurDonnees)
+	tempsRest       int
+	mancheEnCours   bool
+	attenteVotes    bool
+	termine         bool
+	nbManches       int
+	compteurJoueurs int
+)
+
+func main() {
+	reglages = reglageJeu{
+		Categories: listeCategories(),
+		Temps:      90,
+		Manches:    5,
+	}
+	lettreActu = lettreAleatoire()
+
+	var err error
+	tplJeu, err = template.ParseFiles("templates/ptitbac.html")
+	if err != nil {
+		log.Fatalf("Erreur template %v", err)
+	}
+
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	http.HandleFunc("/", pageJeu)
+	http.HandleFunc("/ws", socketJeu)
+	http.HandleFunc("/config", configJeu)
+
+	demarrerManche(false)
+
+	log.Println("Serveur lance sur http://localhost:8080")
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Fatalf("Erreur serveur %v", err)
+	}
+}
+
+func pageJeu(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	data := donneesPage{
+		Lettre:          string(lettreActu),
+		Categories:      append([]string(nil), reglages.Categories...),
+		TempsParManche:  reglages.Temps,
+		NombreDeManches: reglages.Manches,
+	}
+	if err := tplJeu.Execute(w, data); err != nil {
+		http.Error(w, "Erreur interne", http.StatusInternalServerError)
+	}
+}
+
+func socketJeu(w http.ResponseWriter, r *http.Request) {
+	conn, err := monterWS.Upgrade(w, r, nil)
+	if err != nil {
+		log.Printf("Erreur WS %v", err)
 		return
 	}
 
-	var payload requeteConfiguration
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+	mu.Lock()
+	compteurJoueurs++
+	j := &joueurDonnees{
+		ID:       "joueur-" + strconv.Itoa(compteurJoueurs),
+		Nom:      "Anonyme",
+		Reponses: make(map[string]string),
+		Actif:    mancheEnCours && !termine,
+	}
+	joueurs[conn] = j
+	mu.Unlock()
+
+	_ = conn.WriteJSON(map[string]string{"type": "identity", "id": j.ID})
+	envoyerEtat()
+	go boucleWS(conn)
+}
+
+func configJeu(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Methode refusee", http.StatusMethodNotAllowed)
+		return
+	}
+	var reg reglageJeu
+	if err := json.NewDecoder(r.Body).Decode(&reg); err != nil {
 		http.Error(w, "JSON invalide", http.StatusBadRequest)
 		return
 	}
 
-	nouvellesCategories := make([]string, 0, len(payload.Categories))
-	for _, cat := range payload.Categories {
+	nouvelles := []string{}
+	for _, cat := range reg.Categories {
 		cat = strings.TrimSpace(cat)
 		if cat != "" {
-			nouvellesCategories = append(nouvellesCategories, cat)
+			nouvelles = append(nouvelles, cat)
 		}
 	}
-	if len(nouvellesCategories) == 0 {
-		nouvellesCategories = ObtenirCategories()
+	if len(nouvelles) == 0 {
+		nouvelles = listeCategories()
 	}
-
-	if payload.Temps < 15 {
-		payload.Temps = 15
+	if reg.Temps < 15 {
+		reg.Temps = 15
 	}
-	if payload.Manches <= 0 {
-		if configuration.NombreManche > 0 {
-			payload.Manches = configuration.NombreManche
+	if reg.Manches <= 0 {
+		if reglages.Manches > 0 {
+			reg.Manches = reglages.Manches
 		} else {
-			payload.Manches = 5
+			reg.Manches = 5
 		}
 	}
 
 	mu.Lock()
-	configuration.Categories = nouvellesCategories
-	configuration.TempsManche = payload.Temps
-	configuration.NombreManche = payload.Manches
-	roundActive = false
-	attenteRejouer = false
-	partieTerminee = false
-	remainingSeconds = 0
-	manchesJouees = 0
-	lettreCourante = ObtenirLettreAleatoire()
-	for _, joueur := range clients {
+	reglages = reg
+	mancheEnCours = false
+	attenteVotes = false
+	termine = false
+	tempsRest = 0
+	nbManches = 0
+	lettreActu = lettreAleatoire()
+	for _, joueur := range joueurs {
 		joueur.Score = 0
-		joueur.ScoreTotal = 0
+		joueur.Total = 0
 		joueur.Reponses = make(map[string]string)
 		joueur.Pret = false
 		joueur.Actif = false
 	}
 	mu.Unlock()
 
-	go demarrerNouvelleMancheAvecSelection(false)
-
+	demarrerManche(false)
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
 
-func boucleLecture(conn *websocket.Conn) {
+func boucleWS(conn *websocket.Conn) {
 	defer func() {
 		mu.Lock()
-		delete(clients, conn)
-		// si on était en attente de relance, on peut démarrer automatiquement
-		tenterDemarrageApresVotesVerrouille()
+		delete(joueurs, conn)
 		mu.Unlock()
 		conn.Close()
-		diffuserEtat()
+		envoyerEtat()
 	}()
 
 	for {
-		var msg MessageRecu
+		var msg messageJeu
 		if err := conn.ReadJSON(&msg); err != nil {
-			log.Printf("Erreur lecture WebSocket : %v", err)
 			return
 		}
 
 		mu.Lock()
-		joueur, ok := clients[conn]
+		j, ok := joueurs[conn]
 		if !ok {
 			mu.Unlock()
 			return
 		}
 
-		switch msg.Type {
-		case "join":
-			if strings.TrimSpace(msg.Nom) != "" {
-				joueur.Nom = msg.Nom
+		if msg.Type == "join" {
+			if nom := strings.TrimSpace(msg.Nom); nom != "" {
+				j.Nom = nom
 			}
-		case "answers":
-			if !roundActive || !joueur.Actif {
-				break
-			}
+		}
 
-			toutesRemplies := true
-			if joueur.Reponses == nil {
-				joueur.Reponses = make(map[string]string)
-			}
-
-			for _, cat := range configuration.Categories {
-				rep := ""
+		if msg.Type == "answers" && mancheEnCours && j.Actif {
+			complet := true
+			for _, cat := range reglages.Categories {
+				valeur := ""
 				if msg.Reponses != nil {
-					rep = msg.Reponses[cat]
+					valeur = msg.Reponses[cat]
 				}
-				joueur.Reponses[cat] = rep
-				if strings.TrimSpace(rep) == "" {
-					toutesRemplies = false
+				j.Reponses[cat] = valeur
+				if strings.TrimSpace(valeur) == "" {
+					complet = false
 				}
 			}
-
-			if toutesRemplies {
+			if complet {
 				mu.Unlock()
-				arreterMancheParCompletion()
+				finMancheRemplie()
 				continue
 			}
-		case "ready":
-			if !attenteRejouer || joueur.Pret {
-				break
-			}
-			joueur.Pret = true
-			if tenterDemarrageApresVotesVerrouille() {
+		}
+
+		if msg.Type == "ready" && attenteVotes && !j.Pret {
+			j.Pret = true
+			if verifieVotes() {
 				mu.Unlock()
 				continue
 			}
 		}
 
 		mu.Unlock()
-		diffuserEtat()
+		envoyerEtat()
 	}
 }
 
-func demarrerNouvelleMancheAvecSelection(selectionParPrets bool) {
+func demarrerManche(selection bool) {
 	mu.Lock()
-	defer mu.Unlock()
-	lancerNouvelleMancheVerrouille(selectionParPrets)
-}
-
-func lancerNouvelleMancheVerrouille(selectionParPrets bool) {
-	if partieTerminee || (configuration.NombreManche > 0 && manchesJouees >= configuration.NombreManche) {
-		terminerPartieVerrouille()
+	if termine || (reglages.Manches > 0 && nbManches >= reglages.Manches) {
+		finPartie()
+		mu.Unlock()
 		return
 	}
 
 	actifs := 0
-	for _, j := range clients {
+	for _, j := range joueurs {
 		j.Score = 0
 		j.Reponses = make(map[string]string)
-		if selectionParPrets {
+		if selection {
 			j.Actif = j.Pret
 		} else {
 			j.Actif = true
@@ -319,182 +273,182 @@ func lancerNouvelleMancheVerrouille(selectionParPrets bool) {
 		}
 		j.Pret = false
 	}
-
-	if selectionParPrets && actifs == 0 {
-		attenteRejouer = true
-		remainingSeconds = 0
+	if selection && actifs == 0 {
+		attenteVotes = true
+		tempsRest = 0
+		mu.Unlock()
 		return
 	}
 
-	manchesJouees++
-	lettreCourante = ObtenirLettreAleatoire()
-	remainingSeconds = 90
-	roundActive = true
-	attenteRejouer = false
-	partieTerminee = false
+	nbManches++
+	if reglages.Temps <= 0 {
+		reglages.Temps = 90
+	}
+	lettreActu = lettreAleatoire()
+	tempsRest = reglages.Temps
+	mancheEnCours = true
+	attenteVotes = false
+	termine = false
+	mu.Unlock()
 
-	go diffuserEtat()
-	go lancerTimer()
+	go compteRebours()
+	envoyerEtat()
 }
 
-func lancerTimer() {
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
+func compteRebours() {
+	t := time.NewTicker(time.Second)
+	defer t.Stop()
 
-	for range ticker.C {
+	for range t.C {
 		mu.Lock()
-		if !roundActive {
+		if !mancheEnCours {
 			mu.Unlock()
 			return
 		}
-
-		if remainingSeconds > 0 {
-			remainingSeconds--
+		if tempsRest > 0 {
+			tempsRest--
 		}
-
-		if remainingSeconds == 0 {
-			log.Println("Fin de manche par timer (0s)")
-			roundActive = false
-			attribuerScoresFinMancheVerrouille()
-			passerEnModeAttenteVerrouille()
+		if tempsRest == 0 {
+			mancheEnCours = false
+			scoresFin()
+			modeAttente()
 			mu.Unlock()
-			diffuserEtat()
+			envoyerEtat()
 			return
 		}
 		mu.Unlock()
-
-		diffuserEtat()
+		envoyerEtat()
 	}
 }
 
-func arreterMancheParCompletion() {
+func finMancheRemplie() {
 	mu.Lock()
-	defer mu.Unlock()
-
-	if !roundActive {
+	if !mancheEnCours {
+		mu.Unlock()
 		return
 	}
-	log.Println("Fin de manche : un joueur a rempli toutes les catégories")
-	roundActive = false
-	remainingSeconds = 0
-	attribuerScoresFinMancheVerrouille()
-	passerEnModeAttenteVerrouille()
-	go diffuserEtat()
+	mancheEnCours = false
+	tempsRest = 0
+	scoresFin()
+	modeAttente()
+	mu.Unlock()
+	envoyerEtat()
 }
 
-func attribuerScoresFinMancheVerrouille() {
-	if len(clients) == 0 {
+func scoresFin() {
+	if len(joueurs) == 0 {
 		return
 	}
-
-	reponsesJoueurs := make([]map[string]string, 0, len(clients))
-	ordre := make([]*Joueur, 0, len(clients))
-	for _, joueur := range clients {
-		if joueur.Reponses == nil {
-			joueur.Reponses = make(map[string]string)
+	tous := []map[string]string{}
+	ordre := []*joueurDonnees{}
+	for _, j := range joueurs {
+		if j.Reponses == nil {
+			j.Reponses = make(map[string]string)
 		}
-		if joueur.Actif {
-			reponsesJoueurs = append(reponsesJoueurs, joueur.Reponses)
-			ordre = append(ordre, joueur)
+		if j.Actif {
+			tous = append(tous, j.Reponses)
+			ordre = append(ordre, j)
 		} else {
-			joueur.Score = 0
+			j.Score = 0
 		}
 	}
-
-	scores := CalculerScoresCollectifs(reponsesJoueurs, configuration.Categories, lettreCourante)
-	for i, joueur := range ordre {
-		joueur.Score = scores[i]
-		joueur.ScoreTotal += scores[i]
+	points := scoresCollectifs(tous, reglages.Categories, lettreActu)
+	for i, j := range ordre {
+		j.Score = points[i]
+		j.Total += points[i]
 	}
 }
 
-func passerEnModeAttenteVerrouille() {
-	if configuration.NombreManche > 0 && manchesJouees >= configuration.NombreManche {
-		terminerPartieVerrouille()
+func modeAttente() {
+	if reglages.Manches > 0 && nbManches >= reglages.Manches {
+		finPartie()
 		return
 	}
-	attenteRejouer = true
-	remainingSeconds = 0
-	for _, joueur := range clients {
-		joueur.Actif = false
-		joueur.Pret = false
+	attenteVotes = true
+	tempsRest = 0
+	for _, j := range joueurs {
+		j.Actif = false
+		j.Pret = false
 	}
 }
 
-func tenterDemarrageApresVotesVerrouille() bool {
-	if !attenteRejouer || len(clients) == 0 || partieTerminee {
+func verifieVotes() bool {
+	if !attenteVotes || len(joueurs) == 0 || termine {
 		return false
 	}
-	prets, total := compterJoueursPretsVerrouille()
+	prets, total := compterPrets()
 	if prets == 0 {
 		return false
 	}
 	if prets*3 > total {
-		lancerNouvelleMancheVerrouille(true)
+		demarrerManche(true)
 		return true
 	}
 	return false
 }
 
-func terminerPartieVerrouille() {
-	roundActive = false
-	attenteRejouer = false
-	partieTerminee = true
-	remainingSeconds = 0
-	for _, joueur := range clients {
-		joueur.Actif = false
-		joueur.Pret = false
+func finPartie() {
+	mancheEnCours = false
+	attenteVotes = false
+	termine = true
+	tempsRest = 0
+	for _, j := range joueurs {
+		j.Actif = false
+		j.Pret = false
 	}
 }
 
-func compterJoueursPretsVerrouille() (int, int) {
-	total := len(clients)
+func compterPrets() (int, int) {
 	prets := 0
-	for _, joueur := range clients {
-		if joueur.Pret {
+	total := len(joueurs)
+	for _, j := range joueurs {
+		if j.Pret {
 			prets++
 		}
 	}
 	return prets, total
 }
 
-func diffuserEtat() {
+func envoyerEtat() {
 	mu.Lock()
-	etat := EtatPartie{
-		Type:            "state",
-		Lettre:          string(lettreCourante),
-		Categories:      append([]string(nil), configuration.Categories...),
-		RemainingSecond: remainingSeconds,
-		RoundActive:     roundActive,
-		WaitingRestart:  attenteRejouer,
-		ManchesJouees:   manchesJouees,
-		ManchesMaximum:  configuration.NombreManche,
-		PartieTerminee:  partieTerminee,
+	etat := paquetEtat{
+		Type:           "state",
+		Lettre:         string(lettreActu),
+		Categories:     append([]string(nil), reglages.Categories...),
+		Secondes:       tempsRest,
+		MancheActive:   mancheEnCours,
+		Attente:        attenteVotes,
+		NumeroManche:   nbManches,
+		LimiteManches:  reglages.Manches,
+		JeuTermine:     termine,
+		TempsParManche: reglages.Temps,
 	}
-	prets, total := compterJoueursPretsVerrouille()
-	etat.ReadyCount = prets
-	etat.ReadyTotal = total
+	prets, total := compterPrets()
+	etat.CompteurPrets = prets
+	etat.CompteurTotal = total
 
-	joueurs := make([]Joueur, 0, len(clients))
+	if mancheEnCours && total == 0 {
+		etat.MancheActive = false
+	}
+
+	jListe := make([]joueurDonnees, 0, len(joueurs))
 	actifs := 0
-	for _, j := range clients {
+	for _, j := range joueurs {
 		if j.Actif {
 			actifs++
 		}
-		joueurs = append(joueurs, *j)
+		jListe = append(jListe, *j)
 	}
-	etat.Joueurs = joueurs
-	etat.ActivePlayersThisRound = actifs
+	etat.Joueurs = jListe
+	etat.Actifs = actifs
 
-	conns := make([]*websocket.Conn, 0, len(clients))
-	for c := range clients {
-		conns = append(conns, c)
+	dest := make([]*websocket.Conn, 0, len(joueurs))
+	for conn := range joueurs {
+		dest = append(dest, conn)
 	}
 	mu.Unlock()
 
-	for _, c := range conns {
-		if err := c.WriteJSON(etat); err != nil {
-			log.Printf("Erreur envoi WebSocket : %v", err)
-		}
+	for _, conn := range dest {
+		_ = conn.WriteJSON(etat)
 	}
 }

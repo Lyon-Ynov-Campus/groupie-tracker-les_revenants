@@ -5,82 +5,84 @@ import (
 	"strings"
 )
 
-// ObtenirCategories retourne la liste des categories du Petit Bac
-func ObtenirCategories() []string {
-	return []string{
-		"Artiste",
-		"Album",
-		"Groupe de musique",
-		"Instrument de musique",
-		"Featuring",
-	}
+func listeCategories() []string {
+	res := []string{}
+	res = append(res, "Artiste")
+	res = append(res, "Album")
+	res = append(res, "Groupe de musique")
+	res = append(res, "Instrument de musique")
+	res = append(res, "Featuring")
+	return res
 }
 
-// ObtenirLettreAleatoire retourne une lettre aleatoire entre 'A' et 'Z'
-func ObtenirLettreAleatoire() rune {
-	return rune('A' + rand.Intn(26))
+func lettreAleatoire() rune {
+	n := rand.Intn(26)
+	return rune('A' + n)
 }
 
-// CalculerScoreReponses calcule le nombre de reponses non vides
-func CalculerScoreReponses(reponses map[string]string, categories []string) int {
+func compteReponses(reponses map[string]string, categories []string) int {
 	score := 0
-	for _, categorie := range categories {
-		if strings.TrimSpace(reponses[categorie]) != "" {
+	for i := 0; i < len(categories); i++ {
+		cat := categories[i]
+		texte := strings.TrimSpace(reponses[cat])
+		if texte != "" {
 			score++
 		}
 	}
 	return score
 }
 
-// EstValidePourLettre verifie qu'une reponse commence par la lettre donnee (sans tenir compte de la casse)
-func EstValidePourLettre(reponse string, lettre rune) bool {
-	reponse = strings.TrimSpace(reponse)
-	if reponse == "" {
+func reponseValide(texte string, lettre rune) bool {
+	texte = strings.TrimSpace(texte)
+	if texte == "" {
 		return false
 	}
-	premiereRune := []rune(strings.ToUpper(reponse))[0]
-	return premiereRune == lettre
+	texte = strings.ToUpper(texte)
+	valeurs := []rune(texte)
+	if len(valeurs) == 0 {
+		return false
+	}
+	return valeurs[0] == lettre
 }
 
-// CalculerScoresCollectifs attribue 0/1/2 points selon la presence et l'unicite des reponses.
-// Une reponse n'est consideree valide que si elle obtient au moins 2/3 de validations (joueurs actifs).
-func CalculerScoresCollectifs(reponsesJoueurs []map[string]string, categories []string, lettre rune) []int {
-	scores := make([]int, len(reponsesJoueurs))
+func scoresCollectifs(reponsesJoueurs []map[string]string, categories []string, lettre rune) []int {
+	resultats := make([]int, len(reponsesJoueurs))
 	if len(reponsesJoueurs) == 0 {
-		return scores
+		return resultats
 	}
 
-	seuilValidations := (2*len(reponsesJoueurs) + 2) / 3 // ceil(2/3 * n)
+	seuil := (2*len(reponsesJoueurs) + 2) / 3
 
-	for _, categorie := range categories {
-		occurences := make(map[string]int)
-		reponsesValides := make([]bool, len(reponsesJoueurs))
-		reponsesNormalisees := make([]string, len(reponsesJoueurs))
+	for _, cat := range categories {
+		occur := make(map[string]int)
+		ok := make([]bool, len(reponsesJoueurs))
+		objets := make([]string, len(reponsesJoueurs))
 
-		for indiceJoueur, reponses := range reponsesJoueurs {
-			reponse := reponses[categorie]
-			if EstValidePourLettre(reponse, lettre) {
-				normalisee := strings.ToUpper(strings.TrimSpace(reponse))
-				occurences[normalisee]++
-				reponsesValides[indiceJoueur] = true
-				reponsesNormalisees[indiceJoueur] = normalisee
+		for i := 0; i < len(reponsesJoueurs); i++ {
+			reponses := reponsesJoueurs[i]
+			texte := reponses[cat]
+			if reponseValide(texte, lettre) {
+				forme := strings.ToUpper(strings.TrimSpace(texte))
+				occur[forme]++
+				ok[i] = true
+				objets[i] = forme
 			}
 		}
 
-		for indiceJoueur := range reponsesJoueurs {
-			if !reponsesValides[indiceJoueur] {
+		for i := 0; i < len(reponsesJoueurs); i++ {
+			if !ok[i] {
 				continue
 			}
-			if occurences[reponsesNormalisees[indiceJoueur]] < seuilValidations {
+			if occur[objets[i]] < seuil {
 				continue
 			}
-			if occurences[reponsesNormalisees[indiceJoueur]] == 1 {
-				scores[indiceJoueur] += 2
+			if occur[objets[i]] == 1 {
+				resultats[i] += 2
 			} else {
-				scores[indiceJoueur]++
+				resultats[i]++
 			}
 		}
 	}
 
-	return scores
+	return resultats
 }
