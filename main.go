@@ -20,6 +20,10 @@ func main() {
 		tmpl.Execute(w, nil)
 	})
 
+	http.HandleFunc("/blindtest", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./BlindTest/static/index.html")
+	})
+
 	log.Println("🌸 Serveur lancé sur http://localhost:8080 (Hello Kitty Style activated)")
 	http.ListenAndServe(":8080", nil)
 }
