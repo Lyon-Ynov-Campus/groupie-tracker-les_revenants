@@ -1,18 +1,152 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>Blind Test</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blind Test</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<h1>Blind Test</h1>
-<div id="game">
-    <audio id="player" controls></audio>
-    <input type="text" id="answer" placeholder="Votre réponse...">
-    <button id="send">Envoyer</button>
-</div>
-<div id="scoreboard"></div>
-<script src="app.js"></script>
+    <div id="home-screen" class="screen active">
+        <div class="container">
+            <h1>Blind Test</h1>
+            <p class="subtitle">Devinez les musiques en un clin d'œil</p>
+            
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="showCreateGame()">Créer une partie</button>
+                <button class="btn btn-secondary" onclick="showJoinGame()">Rejoindre une partie</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="create-game-screen" class="screen">
+        <div class="container">
+            <h2>Configuration de la partie</h2>
+            
+            <form id="game-form">
+                <div class="form-group">
+                    <label for="playlist">Playlist:</label>
+                    <select id="playlist">
+                        <option value="Rock">Rock</option>
+                        <option value="Rap">Rap</option>
+                        <option value="Pop">Pop</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="max-rounds">Nombre de manches:</label>
+                    <input type="number" id="max-rounds" min="1" max="20" value="5">
+                </div>
+
+                <div class="form-group">
+                    <label for="round-duration">Temps par manche (secondes):</label>
+                    <input type="number" id="round-duration" min="5" max="60" value="15">
+                </div>
+
+                <div class="form-group">
+                    <label for="pseudonym">Votre pseudonyme:</label>
+                    <input type="text" id="pseudonym" placeholder="Entrez votre nom" required>
+                </div>
+
+                <button type="button" class="btn btn-primary" onclick="createGame()">Créer la partie</button>
+                <button type="button" class="btn btn-secondary" onclick="goHome()">Retour</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="join-game-screen" class="screen">
+        <div class="container">
+            <h2>Rejoindre une partie</h2>
+            
+            <div class="form-group">
+                <label for="room-code">Code de la salle:</label>
+                <input type="text" id="room-code" placeholder="Entrez le code" maxlength="6">
+            </div>
+
+            <div class="form-group">
+                <label for="join-pseudonym">Votre pseudonyme:</label>
+                <input type="text" id="join-pseudonym" placeholder="Entrez votre nom" required>
+            </div>
+
+            <button class="btn btn-primary" onclick="joinGame()">Rejoindre</button>
+            <button class="btn btn-secondary" onclick="goHome()">Retour</button>
+        </div>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <div class="game-container">
+            <div class="game-header">
+                <div class="header-left">
+                    <button class="btn btn-icon" onclick="leaveGame()">← QUITTER</button>
+                </div>
+                <div class="header-center">
+                    <span id="round-display">0/5</span>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-icon" onclick="toggleVolume()">🔊</button>
+                </div>
+            </div>
+
+            <div class="game-content">
+                <div class="leaderboard">
+                    <h3>Classement</h3>
+                    <div id="players" class="players-ranking"></div>
+                </div>
+
+                <div class="play-area">
+                    <div class="playlist-info">
+                        <div id="playlist-flag" class="flag"></div>
+                        <span id="playlist-name"></span>
+                    </div>
+
+                    <div class="feedback-circles">
+                        <div id="feedback-container" class="feedback-dots"></div>
+                    </div>
+
+                    <div id="visualizer" class="visualizer">
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                    </div>
+
+                    <div id="current-track-info" class="track-info" style="display:none;">
+                        <div class="track-img"></div>
+                        <div class="track-details">
+                            <p class="track-title" id="revealed-title"></p>
+                            <p class="track-artist" id="revealed-artist"></p>
+                        </div>
+                    </div>
+
+                    <div id="answer-form" class="answer-form" style="display:none;">
+                        <input type="text" id="answer-input" placeholder="Quel est le titre?" autocomplete="off">
+                        <button class="btn btn-submit" onclick="submitAnswer()">→</button>
+                    </div>
+
+                    <div id="waiting-screen" class="waiting">
+                        <p id="waiting-text">En attente du début de la partie...</p>
+                    </div>
+
+                    <button id="start-btn" class="btn btn-start" onclick="startGame()" style="display:none;">DÉMARRER LE JEU</button>
+
+                    <div id="responses-list" class="responses-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="scoreboard-screen" class="screen">
+        <div class="container">
+            <h2>Résultats</h2>
+            <div id="scoreboard" class="scoreboard"></div>
+            <button class="btn btn-primary" onclick="goHome()">Retour à l'accueil</button>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
 </body>
 </html>
