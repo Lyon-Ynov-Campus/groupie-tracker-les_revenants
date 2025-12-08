@@ -787,6 +787,7 @@ func getGenreID(playlist string) int {
 		"metal":       464,
 		"alternative": 85,
 		"latin":       197,
+		"techno":      140,
 	}
 
 	if id, exists := genreMap[playlist]; exists {

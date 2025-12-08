@@ -379,7 +379,7 @@ function showCorrectNotification(data) {
     }
     
     notification.textContent = `${icon} ${message}`;
-    notification.style.background = data.color === 'green' ? '#00B894' : '#FF8C00';
+    notification.style.background = data.color === 'green' ? '#00b893db' : '#ff8c00e6';
     notification.classList.add('show');
 
     setTimeout(() => {
@@ -425,19 +425,20 @@ function updateGenreDescription() {
         'francaise': 'Les plus grands hits de la musique française (Stromae, Angèle, Édith Piaf, Julien Doré...)',
         'pop': 'Les hits pop du moment et les classiques incontournables (Taylor Swift, Ed Sheeran, Dua Lipa, ABBA...)',
         'rock': 'Du rock classique au rock moderne, guitares électriques garanties (Queen, Nirvana, Foo Fighters, AC/DC...)',
-        'rap': 'Hip-hop et rap, des pionniers aux nouveaux talents (Eminem, Kendrick Lamar, Drake, Tupac...)',
+        'rap': 'Hip-hop et rap, des pionniers aux nouveaux talents (Eminem, Tupac, BigFlo & Oli...)',
         'electronic': 'Musique électronique, dance et EDM pour faire vibrer la piste (Daft Punk, Calvin Harris, Avicii, David Guetta...)',
         'indie': 'Sons alternatifs et indépendants hors des sentiers battus (Arctic Monkeys, The Strokes, Tame Impala, Arcade Fire...)',
         'classic': 'Les grands classiques de la musique, intemporels (Beethoven, Mozart, Chopin, Vivaldi...)',
         'country': 'Country et folk américain, guitares acoustiques et banjos (Johnny Cash, Dolly Parton, Luke Combs...)',
         'jazz': 'Jazz classique et moderne, improvisations et swing (Miles Davis, Ella Fitzgerald, Louis Armstrong...)',
-        'blues': 'Les racines du blues, guitares et harmonica (B.B. King, Muddy Waters, Eric Clapton...)',
+        'blues': 'Les racines du blues, guitares et harmonica (ZZ Top (blues rock), Muddy Waters, Eric Clapton...)',
         'reggae': 'Rythmes jamaïcains et vibes positives (Bob Marley, Peter Tosh, Damian Marley...)',
-        'rnb': 'R&B moderne et contemporain, voix soul et beats smooth (The Weeknd, Frank Ocean, SZA, Beyoncé...)',
+        'rnb': 'R&B moderne et contemporain, voix soul et beats smooth (The Weeknd, Beyoncé...)',
         'soul': 'Soul et funk, grooves irrésistibles et voix puissantes (Aretha Franklin, James Brown, Stevie Wonder...)',
         'metal': 'Metal dans tous ses styles, du heavy au progressive (Metallica, Iron Maiden, Slayer, System of a Down...)',
-        'alternative': 'Rock alternatif et sons expérimentaux (Radiohead, Muse, The Killers, Linkin Park...)',
-        'latin': 'Musique latine, reggaeton, salsa et rythmes ensoleillés (Bad Bunny, Shakira, J Balvin, Marc Anthony...)'
+        'alternative': 'Rock alternatif et sons expérimentaux (Radiohead, Muse, The Killers, Linkin Park ...)',
+        'latin': 'Musique latine, reggaeton, salsa et rythmes ensoleillés (Shakira, J Balvin ...)',
+        'techno':'Techno underground et futuriste, rythmes répétitifs et atmosphère électronique (...)'
     };
     
     descriptionElement.textContent = descriptions[genre] || '';
