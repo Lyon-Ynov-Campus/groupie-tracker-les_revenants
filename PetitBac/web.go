@@ -13,6 +13,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// --- STRUCTURES DE DONNÉES ---
+
 type joueurDonnees struct {
 	ID       string            `json:"id"`
 	Nom      string            `json:"name"`
@@ -59,6 +61,8 @@ type reglageJeu struct {
 	Manches    int      `json:"manches"`
 }
 
+// --- VARIABLES GLOBALES ---
+
 var (
 	tplJeu          *template.Template
 	monterWS        = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }}
@@ -74,7 +78,11 @@ var (
 	compteurJoueurs int
 )
 
+// --- FONCTION MAIN (Point d'entrée du jeu) ---
+
 func main() {
+	// 1. Initialisation des paramètres par défaut
+	// NOTE: listeCategories() et lettreAleatoire() viennent de logic.go
 	reglages = reglageJeu{
 		Categories: listeCategories(),
 		Temps:      90,
@@ -82,24 +90,32 @@ func main() {
 	}
 	lettreActu = lettreAleatoire()
 
+	// 2. Chargement du template HTML
 	var err error
+	// IMPORTANT : On pointe vers le dossier templates/ visible dans ton image
 	tplJeu, err = template.ParseFiles("templates/ptitbac.html")
 	if err != nil {
-		log.Fatalf("Erreur template %v", err)
+		log.Fatalf("❌ Erreur chargement template: %v", err)
 	}
 
+	// 3. Gestion des fichiers statiques (CSS/JS du jeu)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+
+	// 4. Routes
 	http.HandleFunc("/", pageJeu)
 	http.HandleFunc("/ws", socketJeu)
 	http.HandleFunc("/config", configJeu)
 
+	// 5. Démarrage
 	demarrerManche(false)
 
-	log.Println("Serveur lance sur http://localhost:8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatalf("Erreur serveur %v", err)
+	log.Println("😈 Serveur PETIT BAC prêt sur http://localhost:8081")
+	if err := http.ListenAndServe(":8081", nil); err != nil {
+		log.Fatalf("❌ Erreur serveur: %v", err)
 	}
 }
+
+// --- HANDLERS HTTP ---
 
 func pageJeu(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -114,10 +130,65 @@ func pageJeu(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func configJeu(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Methode refusee", http.StatusMethodNotAllowed)
+		return
+	}
+	var reg reglageJeu
+	if err := json.NewDecoder(r.Body).Decode(&reg); err != nil {
+		http.Error(w, "JSON invalide", http.StatusBadRequest)
+		return
+	}
+
+	// Validation sommaire
+	nouvelles := []string{}
+	for _, cat := range reg.Categories {
+		cat = strings.TrimSpace(cat)
+		if cat != "" {
+			nouvelles = append(nouvelles, cat)
+		}
+	}
+	if len(nouvelles) == 0 {
+		nouvelles = listeCategories()
+	}
+	if reg.Temps < 15 {
+		reg.Temps = 15
+	}
+	if reg.Manches <= 0 {
+		reg.Manches = 5
+	}
+
+	mu.Lock()
+	reglages = reg
+	mancheEnCours = false
+	attenteVotes = false
+	termine = false
+	tempsRest = 0
+	nbManches = 0
+	lettreActu = lettreAleatoire()
+	
+	// Reset des joueurs
+	for _, joueur := range joueurs {
+		joueur.Score = 0
+		joueur.Total = 0
+		joueur.Reponses = make(map[string]string)
+		joueur.Pret = false
+		joueur.Actif = false
+	}
+	mu.Unlock()
+
+	demarrerManche(false)
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+}
+
+// --- WEBSOCKETS ---
+
 func socketJeu(w http.ResponseWriter, r *http.Request) {
 	conn, err := monterWS.Upgrade(w, r, nil)
 	if err != nil {
-		log.Printf("Erreur WS %v", err)
+		log.Printf("Erreur WS: %v", err)
 		return
 	}
 
@@ -135,60 +206,6 @@ func socketJeu(w http.ResponseWriter, r *http.Request) {
 	_ = conn.WriteJSON(map[string]string{"type": "identity", "id": j.ID})
 	envoyerEtat()
 	go boucleWS(conn)
-}
-
-func configJeu(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Methode refusee", http.StatusMethodNotAllowed)
-		return
-	}
-	var reg reglageJeu
-	if err := json.NewDecoder(r.Body).Decode(&reg); err != nil {
-		http.Error(w, "JSON invalide", http.StatusBadRequest)
-		return
-	}
-
-	nouvelles := []string{}
-	for _, cat := range reg.Categories {
-		cat = strings.TrimSpace(cat)
-		if cat != "" {
-			nouvelles = append(nouvelles, cat)
-		}
-	}
-	if len(nouvelles) == 0 {
-		nouvelles = listeCategories()
-	}
-	if reg.Temps < 15 {
-		reg.Temps = 15
-	}
-	if reg.Manches <= 0 {
-		if reglages.Manches > 0 {
-			reg.Manches = reglages.Manches
-		} else {
-			reg.Manches = 5
-		}
-	}
-
-	mu.Lock()
-	reglages = reg
-	mancheEnCours = false
-	attenteVotes = false
-	termine = false
-	tempsRest = 0
-	nbManches = 0
-	lettreActu = lettreAleatoire()
-	for _, joueur := range joueurs {
-		joueur.Score = 0
-		joueur.Total = 0
-		joueur.Reponses = make(map[string]string)
-		joueur.Pret = false
-		joueur.Actif = false
-	}
-	mu.Unlock()
-
-	demarrerManche(false)
-	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
 
 func boucleWS(conn *websocket.Conn) {
@@ -251,6 +268,8 @@ func boucleWS(conn *websocket.Conn) {
 	}
 }
 
+// --- LOGIQUE DE JEU ---
+
 func demarrerManche(selection bool) {
 	mu.Lock()
 	if termine || (reglages.Manches > 0 && nbManches >= reglages.Manches) {
@@ -284,7 +303,7 @@ func demarrerManche(selection bool) {
 	if reglages.Temps <= 0 {
 		reglages.Temps = 90
 	}
-	lettreActu = lettreAleatoire()
+	lettreActu = lettreAleatoire() // Vient de logic.go
 	tempsRest = reglages.Temps
 	mancheEnCours = true
 	attenteVotes = false
@@ -352,7 +371,10 @@ func scoresFin() {
 			j.Score = 0
 		}
 	}
+	
+	// APPEL A LOGIC.GO POUR LES CALCULS
 	points := scoresCollectifs(tous, reglages.Categories, lettreActu)
+	
 	for i, j := range ordre {
 		j.Score = points[i]
 		j.Total += points[i]
@@ -380,7 +402,9 @@ func verifieVotes() bool {
 	if prets == 0 {
 		return false
 	}
-	if prets*3 > total {
+	// Si plus de 33% des joueurs sont prêts (ou logique custom)
+	// Ici on met: si tous les joueurs présents sont prêts ou au moins 2/3
+	if total > 0 && float64(prets) >= float64(total)*0.66 {
 		demarrerManche(true)
 		return true
 	}
