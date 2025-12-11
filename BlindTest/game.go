@@ -1,4 +1,4 @@
-package main
+package blindtest
 
 import (
 	"encoding/json"
@@ -75,15 +75,6 @@ var (
 	rooms   = make(map[string]*Room)
 	roomsMu sync.RWMutex
 )
-
-func main() {
-	http.HandleFunc("/", serveHome)
-	http.HandleFunc("/ws", handleWebSocket)
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-
-	fmt.Println("Server starting on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
-}
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/index.html")
@@ -795,4 +786,20 @@ func getGenreID(playlist string) int {
 	}
 
 	return 0
+}
+
+func RegisterRoutes() {
+    // 1. La page HTML du jeu
+    http.HandleFunc("/BlindTest", func(w http.ResponseWriter, r *http.Request) {
+        // Attention au chemin : on part de la racine du projet
+        http.ServeFile(w, r, "BlindTest/static/index.html")
+    })
+
+    // 2. Le WebSocket (On utilise une route différente de PetitBac !)
+    http.HandleFunc("/blindtest/ws", handleWebSocket)
+
+    // 3. Les fichiers statiques (CSS/JS) spécifiques au BlindTest
+    // Route : /blindtest/static/style.css
+    fs := http.FileServer(http.Dir("BlindTest/static"))
+    http.Handle("/blindtest/static/", http.StripPrefix("/blindtest/static/", fs))
 }

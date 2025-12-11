@@ -44,7 +44,7 @@ function setupEventListeners() {
 
 function connectWebSocket() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    const wsUrl = `${protocol}//${window.location.host}/blindtest/ws`; 
     
     ws = new WebSocket(wsUrl);
 
@@ -438,7 +438,7 @@ function updateGenreDescription() {
         'metal': 'Metal dans tous ses styles, du heavy au progressive (Metallica, Iron Maiden, Slayer, System of a Down...)',
         'alternative': 'Rock alternatif et sons expérimentaux (Radiohead, Muse, The Killers, Linkin Park ...)',
         'latin': 'Musique latine, reggaeton, salsa et rythmes ensoleillés (Shakira, J Balvin ...)',
-        'techno':'Techno underground et futuriste, rythmes répétitifs et atmosphère électronique (...)'
+        'techno': 'Techno underground et futuriste, rythmes répétitifs et atmosphère électronique (...)'
     };
     
     descriptionElement.textContent = descriptions[genre] || '';
