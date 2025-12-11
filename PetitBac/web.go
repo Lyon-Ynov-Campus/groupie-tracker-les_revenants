@@ -109,7 +109,7 @@ func main() {
 	// 5. Démarrage
 	demarrerManche(false)
 
-	log.Println("😈 Serveur PETIT BAC prêt sur http://localhost:8081")
+	log.Println("Serveur PETIT BAC prêt sur http://localhost:8081")
 	if err := http.ListenAndServe(":8081", nil); err != nil {
 		log.Fatalf("❌ Erreur serveur: %v", err)
 	}
