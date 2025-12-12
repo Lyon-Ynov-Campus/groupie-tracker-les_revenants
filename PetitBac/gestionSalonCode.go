@@ -7,7 +7,6 @@ import (
 	"math/rand"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -16,11 +15,6 @@ const (
 	salonCodeLength  = 5
 	maxSalonPlayers  = 5
 )
-
-type salonManager struct {
-	mu     sync.RWMutex
-	salons map[string]*salon
-}
 
 var salons = newSalonManager()
 

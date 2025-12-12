@@ -3,24 +3,9 @@ package petitbac
 import (
 	"fmt"
 	"strings"
-	"sync"
 
 	"github.com/gorilla/websocket"
 )
-
-type salon struct {
-	code            string
-	mu              sync.Mutex
-	reglages        reglageJeu
-	lettreActu      rune
-	joueurs         map[*websocket.Conn]*joueurDonnees
-	tempsRest       int
-	mancheEnCours   bool
-	attenteVotes    bool
-	termine         bool
-	nbManches       int
-	compteurJoueurs int
-}
 
 func newSalon(code string) *salon {
 	return &salon{
