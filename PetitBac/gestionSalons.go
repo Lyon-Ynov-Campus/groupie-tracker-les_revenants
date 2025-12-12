@@ -7,7 +7,6 @@ import (
 	"math/rand"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -18,25 +17,6 @@ const (
 	salonCodeLength  = 5
 	maxSalonPlayers  = 5
 )
-
-type salon struct {
-	code            string
-	mu              sync.Mutex
-	reglages        reglageJeu
-	lettreActu      rune
-	joueurs         map[*websocket.Conn]*joueurDonnees
-	tempsRest       int
-	mancheEnCours   bool
-	attenteVotes    bool
-	termine         bool
-	nbManches       int
-	compteurJoueurs int
-}
-
-type salonManager struct {
-	mu     sync.RWMutex
-	salons map[string]*salon
-}
 
 var salons = newSalonManager()
 
