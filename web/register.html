@@ -3,94 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription - Groupie Tracker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>Inscription</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/auth.css">
 </head>
 <body>
-    <div class="cute-zone-wrapper">
-        <nav class="glass-nav">
-            <div class="logo-container">
-                <img src="/static/img/logo.png" alt="Logo Groupie Tracker" class="bounce-logo">
-            </div>
-            <h1 class="nav-title">Groupie Tracker</h1>
-            <div class="nav-links">
-                <a href="/" class="btn-secondary">Retour</a>
-            </div>
-        </nav>
 
-        <div class="auth-container">
-            <div class="auth-card">
-                <h2 class="auth-title">Inscription ✨</h2>
+    <div class="site-entier">
+        
+        <div class="menu-haut">
+            <div class="logo-zone">
+                <img src="/static/img/logo.png" alt="Logo" class="logo-img">
+            </div>
+
+            <h1 class="titre-principal">GROUPIE TRACKER</h1>
+
+            <div class="liens-droite">
+                <a href="/" class="bouton-blanc">RETOUR</a>
+            </div>
+        </div>
+
+        <div class="zone-formulaire">
+            <div class="boite-connexion">
+                <h2 class="titre-connexion">INSCRIPTION</h2>
                 
-                <form method="POST" action="/register" class="auth-form" id="registerForm">
-                    <div class="form-group">
+                <form method="POST" action="/register" class="formulaire" id="registerForm">
+                    <div class="champ">
                         <label for="pseudo">Pseudo</label>
                         <input type="text" id="pseudo" name="pseudo" required>
                     </div>
 
-                    <div class="form-group">
+                    <div class="champ">
                         <label for="email">Adresse Email</label>
                         <input type="email" id="email" name="email" required>
                     </div>
 
-                    <div class="form-group">
+                    <div class="champ">
                         <label for="password">Mot de passe</label>
                         <input type="password" id="password" name="password" required>
-                        <small class="password-info">
-                            Conformément aux recommandations de la CNIL :<br>
-                            • Au moins 12 caractères<br>
-                            • Une majuscule et une minuscule<br>
+                        
+                        <div class="info-mdp">
+                            <strong>Règles CNIL obligatoires :</strong><br>
+                            • 12 caractères minimum<br>
+                            • Majuscule et minuscule<br>
                             • Un chiffre<br>
-                            • Un caractère spécial (!@#$%^&*(),.?":{}|<>)
-                        </small>
+                            • Un caractère spécial (!@#$...)
+                        </div>
                     </div>
 
-                    <div class="form-group">
+                    <div class="champ">
                         <label for="confirm_password">Confirmer le mot de passe</label>
                         <input type="password" id="confirm_password" name="confirm_password" required>
                     </div>
 
-                    <button type="submit" class="btn-primary btn-full">S'inscrire</button>
+                    <button type="submit" class="bouton-valider">S'INSCRIRE</button>
                 </form>
 
-                <p class="auth-link">
-                    Déjà un compte ? <a href="/login">Connecte-toi ! 🎀</a>
+                <p class="texte-bas">
+                    Déjà un compte ? <a href="/login">Connecte-toi ici !</a>
                 </p>
             </div>
         </div>
     </div>
 
-    <footer class="dark-footer">
-        <p>🤘 A FAIRE 🤘</p>
-    </footer>
+    <div class="bas-de-page">
+        <p>Site réalisé pour l'école</p>
+    </div>
 
     <script>
         document.getElementById('registerForm').addEventListener('submit', function(e) {
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirm_password').value;
+            var password = document.getElementById('password').value;
+            var confirmPassword = document.getElementById('confirm_password').value;
 
             if (password !== confirmPassword) {
                 e.preventDefault();
-                alert('❌ Les mots de passe ne correspondent pas !');
+                alert('Les mots de passe ne sont pas pareils !');
                 return;
             }
 
             if (password.length < 12) {
                 e.preventDefault();
-                alert('❌ Le mot de passe doit contenir au moins 12 caractères.');
+                alert('Mot de passe trop court (12 caractères min).');
                 return;
             }
 
-            const hasUpper = /[A-Z]/.test(password);
-            const hasLower = /[a-z]/.test(password);
-            const hasNumber = /[0-9]/.test(password);
-            const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+            var hasUpper = /[A-Z]/.test(password);
+            var hasLower = /[a-z]/.test(password);
+            var hasNumber = /[0-9]/.test(password);
+            var hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
             if (!hasUpper || !hasLower || !hasNumber || !hasSpecial) {
                 e.preventDefault();
-                alert('❌ Le mot de passe doit contenir une majuscule, une minuscule, un chiffre et un caractère spécial.');
+                alert('Il faut une majuscule, une minuscule, un chiffre et un signe spécial.');
                 return;
             }
         });

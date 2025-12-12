@@ -90,7 +90,7 @@ func main() {
 	var err error
 	tplJeu, err = template.ParseFiles("PetitBac/templates/ptitbac.html")
 	if err != nil {
-		log.Fatal("❌ ERREUR : Impossible de trouver PetitBac/templates/ptitbac.html. Vérifie tes dossiers !", err)
+		log.Fatal("ERREUR : Impossible de trouver PetitBac/templates/ptitbac.html.", err)
 	}
 
 	fs := http.FileServer(http.Dir("web/static"))
@@ -112,11 +112,7 @@ func main() {
 
 	demarrerManche(false)
 
-	log.Println("✅ SERVEUR GLOBAL PRÊT")
-	log.Println("🏠 Accueil : http://localhost:8080")
-	log.Println("🔐 Connexion : http://localhost:8080/login")
-	log.Println("✨ Inscription : http://localhost:8080/register")
-	log.Println("🎵 BlindTest: http://localhost:8080/BlindTest")
+	log.Println("SERVEUR PRET")
 
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal(err)
