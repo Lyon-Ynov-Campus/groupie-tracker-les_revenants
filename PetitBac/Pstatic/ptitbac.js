@@ -2,10 +2,16 @@
 
 let socket = null;
 let identifiantClient = null;
+const urlParams = new URLSearchParams(window.location.search);
+const body = document.body || document.getElementsByTagName("body")[0];
+const salonCode = (urlParams.get("room") || (body ? body.getAttribute("data-room-code") : "") || "").trim().toUpperCase();
 
 function connecterWebSocket() {
     const proto = (window.location.protocol === "https:") ? "wss://" : "ws://";
-    const url = proto + window.location.host + "/ws";
+    let url = proto + window.location.host + "/ws";
+    if (salonCode) {
+        url += "?room=" + encodeURIComponent(salonCode);
+    }
     socket = new WebSocket(url);
 
     socket.onopen = function () {
@@ -248,7 +254,12 @@ document.addEventListener("DOMContentLoaded", function () {
             const categoriesBrutes = document.getElementById("categories-input").value.split(/\r?\n/);
             const categories = categoriesBrutes.map(c => c.trim()).filter(c => c.length > 0);
 
-            fetch("/config", {
+            let configURL = "/config";
+            if (salonCode) {
+                configURL += "?room=" + encodeURIComponent(salonCode);
+            }
+
+            fetch(configURL, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({temps: temps, manches: manches, categories: categories})
