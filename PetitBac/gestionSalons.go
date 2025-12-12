@@ -163,12 +163,6 @@ func (s *salon) hasRoom() bool {
 	return len(s.joueurs) < maxSalonPlayers
 }
 
-func (s *salon) playerCount() int {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return len(s.joueurs)
-}
-
 func (s *salon) addPlayer(conn *websocket.Conn) (*joueurDonnees, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

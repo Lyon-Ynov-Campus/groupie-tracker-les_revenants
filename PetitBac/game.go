@@ -403,18 +403,6 @@ func lettreAleatoire() rune {
 	return rune('A' + n)
 }
 
-func compteReponses(reponses map[string]string, categories []string) int {
-	score := 0
-	for i := 0; i < len(categories); i++ {
-		cat := categories[i]
-		texte := strings.TrimSpace(reponses[cat])
-		if texte != "" {
-			score++
-		}
-	}
-	return score
-}
-
 func reponseValide(texte string, lettre rune) bool {
 	texte = strings.TrimSpace(texte)
 	if texte == "" {
