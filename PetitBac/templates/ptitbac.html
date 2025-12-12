@@ -5,7 +5,7 @@
     <title>Petit Bac multijoueur - WebSocket</title>
     <link rel="stylesheet" href="../Pstatic/styles.css">
 </head>
-<body>
+<body data-room-code="{{.SalonCode}}">
 
 <div class="game-header">
     <h1>Petit Bac multijoueur en temps reel</h1>
@@ -26,6 +26,10 @@
         <span id="timer-affiche">01:30</span>
     </p>
     <p class="info-manches" id="info-manches">Manche 1/5</p>
+</section>
+
+<section class="room-info">
+    <p>Code du salon : <strong id="room-code">{{.SalonCode}}</strong></p>
 </section>
 
 <section class="configuration-partie">
