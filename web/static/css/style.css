@@ -197,12 +197,85 @@ body {
     background-color: #4682b4;
 }
 
-.bas-de-page {
-    background-color: black;
+/* --- NOUVEAU FOOTER --- */
+.pied-de-page {
+    background-color: #111; /* Presque noir */
     color: white;
-    padding: 40px;
+    padding-top: 60px;
+    font-family: Arial, sans-serif;
+    border-top: 5px solid #ff69b4; /* Rappel du rose */
+}
+
+.contenu-pied {
+    display: flex;
+    justify-content: space-around; /* Espacement égal */
+    flex-wrap: wrap; /* Pour que ça passe sur mobile */
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-bottom: 40px;
+}
+
+.colonne-pied {
+    width: 300px;
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.colonne-pied h3 {
+    color: #ff69b4;
+    font-size: 24px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #333;
+    padding-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.colonne-pied p {
+    font-size: 16px;
+    line-height: 1.5;
+    color: #ccc;
+}
+
+.colonne-pied a {
+    display: block; /* Un lien par ligne */
+    color: white;
+    text-decoration: none;
+    margin-bottom: 10px;
+    font-size: 16px;
+    transition: 0.3s;
+}
+
+.colonne-pied a:hover {
+    color: #ff69b4;
+    padding-left: 10px; /* Petit effet de mouvement simple */
+}
+
+.barre-copyright {
+    background-color: black;
     text-align: center;
-    font-size: 20px;
+    padding: 20px;
+    border-top: 1px solid #333;
+}
+
+.barre-copyright p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+/* Version mobile simple */
+@media (max-width: 800px) {
+    .contenu-pied {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .colonne-pied {
+        text-align: center;
+        width: 100%;
+        padding: 0 20px;
+    }
 }
 
 .pseudo-txt {
