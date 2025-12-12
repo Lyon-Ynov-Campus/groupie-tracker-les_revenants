@@ -68,6 +68,12 @@ body {
 .nav-links { gap: 15px; }
 .bounce-logo { height: 55px; animation: bounce 2s infinite; }
 
+.user-info {
+    color: var(--hk-hot-pink);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
 /* =========================================
    3. HERO SECTION
    ========================================= */

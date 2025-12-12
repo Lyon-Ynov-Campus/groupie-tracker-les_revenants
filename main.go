@@ -1,24 +1,20 @@
 package main
 
 import (
-	"encoding/json"   // <--- MANQUAIT
+	"encoding/json"
 	"html/template"
 	"log"
 	"net/http"
-	"strconv"         // <--- MANQUAIT
-	"strings"         // <--- MANQUAIT
+	"strconv"
+	"strings"
 	"sync"
-	"time"            // <--- MANQUAIT
+	"time"
 
 	"github.com/gorilla/websocket"
 
-	// 👇 ATTENTION ICI : REGARDE TON FICHIER go.mod !
-	// Si la 1ère ligne de go.mod est "module groupie-tracker", garde la ligne ci-dessous.
-	// Si c'est "module groupie-tracker-les_revenants", change le début de l'import !
-	"groupie-tracker/BlindTest"
+	blindtest "groupie-tracker/BlindTest"
 )
 
-// --- VARIABLES GLOBALES ---
 var (
 	tplJeu          *template.Template
 	monterWS        = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }}
@@ -34,7 +30,6 @@ var (
 	compteurJoueurs int
 )
 
-// --- STRUCTURES (Petit Bac) ---
 type joueurDonnees struct {
 	ID       string            `json:"id"`
 	Nom      string            `json:"name"`
@@ -81,9 +76,10 @@ type reglageJeu struct {
 	Manches    int      `json:"manches"`
 }
 
-// --- MAIN ---
 func main() {
-	// 1. Initialisation Petit Bac
+
+	initDatabase()
+
 	reglages = reglageJeu{
 		Categories: listeCategories(),
 		Temps:      90,
@@ -91,36 +87,35 @@ func main() {
 	}
 	lettreActu = lettreAleatoire()
 
-	// 2. Chargement Template Petit Bac
 	var err error
 	tplJeu, err = template.ParseFiles("PetitBac/templates/ptitbac.html")
 	if err != nil {
 		log.Fatal("❌ ERREUR : Impossible de trouver PetitBac/templates/ptitbac.html. Vérifie tes dossiers !", err)
 	}
 
-	// 3. Fichiers Statiques
-	// A. Accueil
 	fs := http.FileServer(http.Dir("web/static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
-	
-	// B. Petit Bac
+
 	fsJeu := http.FileServer(http.Dir("PetitBac/Pstatic"))
 	http.Handle("/Pstatic/", http.StripPrefix("/Pstatic/", fsJeu))
 
-	// 4. Routes
-	http.HandleFunc("/", pageAccueil)       
-	http.HandleFunc("/PetitBac", pageJeu)   
-	http.HandleFunc("/ws", socketJeu)       
-	http.HandleFunc("/config", configJeu)   
+	http.HandleFunc("/", pageAccueil)
+	http.HandleFunc("/login", pageLogin)
+	http.HandleFunc("/register", pageRegister)
+	http.HandleFunc("/logout", pageLogout)
+	http.HandleFunc("/api/user", apiUserInfo)
+	http.HandleFunc("/PetitBac", requireAuth(pageJeu))
+	http.HandleFunc("/ws", socketJeu)
+	http.HandleFunc("/config", configJeu)
 
-	// 5. CHARGEMENT DU BLIND TEST
-	blindtest.RegisterRoutes()
+	blindtest.RegisterRoutes(requireAuth)
 
-	// 6. Démarrage
 	demarrerManche(false)
-	
+
 	log.Println("✅ SERVEUR GLOBAL PRÊT")
 	log.Println("🏠 Accueil : http://localhost:8080")
+	log.Println("🔐 Connexion : http://localhost:8080/login")
+	log.Println("✨ Inscription : http://localhost:8080/register")
 	log.Println("🎵 BlindTest: http://localhost:8080/BlindTest")
 
 	if err := http.ListenAndServe(":8080", nil); err != nil {
@@ -128,40 +123,53 @@ func main() {
 	}
 }
 
-// --- HANDLERS ---
 func pageAccueil(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" { http.NotFound(w, r); return }
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
 	tmpl, err := template.ParseFiles("web/index.html")
-	if err != nil { log.Println(err); return }
+	if err != nil {
+		log.Println(err)
+		return
+	}
 	tmpl.Execute(w, nil)
 }
 
 func pageJeu(w http.ResponseWriter, r *http.Request) {
-    // 👇 CETTE LIGNE EST OBLIGATOIRE POUR QUE LE NAVIGATEUR AFFICHE LE DESIGN
-    w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-    data := donneesPage{
-        Lettre:          string(lettreActu),
-        Categories:      append([]string(nil), reglages.Categories...),
-        TempsParManche:  reglages.Temps,
-        NombreDeManches: reglages.Manches,
-    }
-    // S'il y a une erreur, on l'affiche dans la console
-    if err := tplJeu.Execute(w, data); err != nil {
-        log.Println("Erreur affichage jeu:", err)
-    }
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	data := donneesPage{
+		Lettre:          string(lettreActu),
+		Categories:      append([]string(nil), reglages.Categories...),
+		TempsParManche:  reglages.Temps,
+		NombreDeManches: reglages.Manches,
+	}
+	if err := tplJeu.Execute(w, data); err != nil {
+		log.Println("Erreur affichage jeu:", err)
+	}
 }
 
 func configJeu(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost { http.Error(w, "NO", 405); return }
+	if r.Method != http.MethodPost {
+		http.Error(w, "NO", 405)
+		return
+	}
 	var reg reglageJeu
 	json.NewDecoder(r.Body).Decode(&reg)
-	
+
 	mu.Lock()
-	if len(reg.Categories) > 0 { reglages.Categories = reg.Categories }
-	if reg.Temps >= 15 { reglages.Temps = reg.Temps }
-	if reg.Manches > 0 { reglages.Manches = reg.Manches }
-	
+	if len(reg.Categories) > 0 {
+		reglages.Categories = reg.Categories
+	}
+	if reg.Temps >= 15 {
+		reglages.Temps = reg.Temps
+	}
+	if reg.Manches > 0 {
+		reglages.Manches = reg.Manches
+	}
+
 	mancheEnCours, attenteVotes, termine = false, false, false
 	nbManches, tempsRest = 0, 0
 	lettreActu = lettreAleatoire()
@@ -177,7 +185,9 @@ func configJeu(w http.ResponseWriter, r *http.Request) {
 
 func socketJeu(w http.ResponseWriter, r *http.Request) {
 	conn, err := monterWS.Upgrade(w, r, nil)
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 	mu.Lock()
 	compteurJoueurs++
 	j := &joueurDonnees{
@@ -193,107 +203,188 @@ func socketJeu(w http.ResponseWriter, r *http.Request) {
 
 func boucleWS(conn *websocket.Conn) {
 	defer func() {
-		mu.Lock(); delete(joueurs, conn); mu.Unlock()
-		conn.Close(); envoyerEtat()
+		mu.Lock()
+		delete(joueurs, conn)
+		mu.Unlock()
+		conn.Close()
+		envoyerEtat()
 	}()
 	for {
 		var msg messageJeu
-		if err := conn.ReadJSON(&msg); err != nil { return }
+		if err := conn.ReadJSON(&msg); err != nil {
+			return
+		}
 		mu.Lock()
 		j, ok := joueurs[conn]
-		if !ok { mu.Unlock(); return }
+		if !ok {
+			mu.Unlock()
+			return
+		}
 		if msg.Type == "join" {
-			if n := strings.TrimSpace(msg.Nom); n != "" { j.Nom = n }
+			if n := strings.TrimSpace(msg.Nom); n != "" {
+				j.Nom = n
+			}
 		} else if msg.Type == "answers" && mancheEnCours && j.Actif {
 			complet := true
 			for _, cat := range reglages.Categories {
-				val := msg.Reponses[cat]; j.Reponses[cat] = val
-				if strings.TrimSpace(val) == "" { complet = false }
+				val := msg.Reponses[cat]
+				j.Reponses[cat] = val
+				if strings.TrimSpace(val) == "" {
+					complet = false
+				}
 			}
-			if complet { mu.Unlock(); finMancheRemplie(); continue }
+			if complet {
+				mu.Unlock()
+				finMancheRemplie()
+				continue
+			}
 		} else if msg.Type == "ready" && attenteVotes && !j.Pret {
 			j.Pret = true
-			if verifieVotes() { mu.Unlock(); continue }
+			if verifieVotes() {
+				mu.Unlock()
+				continue
+			}
 		}
-		mu.Unlock(); envoyerEtat()
+		mu.Unlock()
+		envoyerEtat()
 	}
 }
 
 func demarrerManche(selection bool) {
 	mu.Lock()
 	if termine || (reglages.Manches > 0 && nbManches >= reglages.Manches) {
-		finPartie(); mu.Unlock(); return
+		finPartie()
+		mu.Unlock()
+		return
 	}
 	actifs := 0
 	for _, j := range joueurs {
-		j.Score = 0; j.Reponses = make(map[string]string)
+		j.Score = 0
+		j.Reponses = make(map[string]string)
 		j.Actif = !selection || j.Pret
-		if j.Actif { actifs++ }
+		if j.Actif {
+			actifs++
+		}
 		j.Pret = false
 	}
 	if selection && actifs == 0 {
-		attenteVotes = true; tempsRest = 0; mu.Unlock(); return
+		attenteVotes = true
+		tempsRest = 0
+		mu.Unlock()
+		return
 	}
-	nbManches++; if reglages.Temps <= 0 { reglages.Temps = 90 }
-	lettreActu = lettreAleatoire(); tempsRest = reglages.Temps
+	nbManches++
+	if reglages.Temps <= 0 {
+		reglages.Temps = 90
+	}
+	lettreActu = lettreAleatoire()
+	tempsRest = reglages.Temps
 	mancheEnCours, attenteVotes, termine = true, false, false
 	mu.Unlock()
-	go compteRebours(); envoyerEtat()
+	go compteRebours()
+	envoyerEtat()
 }
 
 func compteRebours() {
-	t := time.NewTicker(time.Second); defer t.Stop()
+	t := time.NewTicker(time.Second)
+	defer t.Stop()
 	for range t.C {
 		mu.Lock()
-		if !mancheEnCours { mu.Unlock(); return }
-		if tempsRest > 0 { tempsRest-- }
-		if tempsRest == 0 {
-			mancheEnCours = false; scoresFin(); modeAttente()
-			mu.Unlock(); envoyerEtat(); return
+		if !mancheEnCours {
+			mu.Unlock()
+			return
 		}
-		mu.Unlock(); envoyerEtat()
+		if tempsRest > 0 {
+			tempsRest--
+		}
+		if tempsRest == 0 {
+			mancheEnCours = false
+			scoresFin()
+			modeAttente()
+			mu.Unlock()
+			envoyerEtat()
+			return
+		}
+		mu.Unlock()
+		envoyerEtat()
 	}
 }
 
 func finMancheRemplie() {
 	mu.Lock()
-	if !mancheEnCours { mu.Unlock(); return }
-	mancheEnCours = false; tempsRest = 0; scoresFin(); modeAttente()
-	mu.Unlock(); envoyerEtat()
+	if !mancheEnCours {
+		mu.Unlock()
+		return
+	}
+	mancheEnCours = false
+	tempsRest = 0
+	scoresFin()
+	modeAttente()
+	mu.Unlock()
+	envoyerEtat()
 }
 
 func scoresFin() {
-	if len(joueurs) == 0 { return }
+	if len(joueurs) == 0 {
+		return
+	}
 	tous := []map[string]string{}
 	ordre := []*joueurDonnees{}
 	for _, j := range joueurs {
-		if j.Actif { tous = append(tous, j.Reponses); ordre = append(ordre, j) } else { j.Score = 0 }
+		if j.Actif {
+			tous = append(tous, j.Reponses)
+			ordre = append(ordre, j)
+		} else {
+			j.Score = 0
+		}
 	}
 	points := scoresCollectifs(tous, reglages.Categories, lettreActu)
-	for i, j := range ordre { j.Score = points[i]; j.Total += points[i] }
+	for i, j := range ordre {
+		j.Score = points[i]
+		j.Total += points[i]
+	}
 }
 
 func modeAttente() {
-	if reglages.Manches > 0 && nbManches >= reglages.Manches { finPartie(); return }
-	attenteVotes = true; tempsRest = 0
-	for _, j := range joueurs { j.Actif = false; j.Pret = false }
+	if reglages.Manches > 0 && nbManches >= reglages.Manches {
+		finPartie()
+		return
+	}
+	attenteVotes = true
+	tempsRest = 0
+	for _, j := range joueurs {
+		j.Actif = false
+		j.Pret = false
+	}
 }
 
 func verifieVotes() bool {
-	if !attenteVotes || len(joueurs) == 0 || termine { return false }
+	if !attenteVotes || len(joueurs) == 0 || termine {
+		return false
+	}
 	prets, total := compterPrets()
-	if prets > 0 && float64(prets) >= float64(total)*0.66 { demarrerManche(true); return true }
+	if prets > 0 && float64(prets) >= float64(total)*0.66 {
+		demarrerManche(true)
+		return true
+	}
 	return false
 }
 
 func finPartie() {
-	mancheEnCours, attenteVotes, termine = false, false, true; tempsRest = 0
-	for _, j := range joueurs { j.Actif, j.Pret = false, false }
+	mancheEnCours, attenteVotes, termine = false, false, true
+	tempsRest = 0
+	for _, j := range joueurs {
+		j.Actif, j.Pret = false, false
+	}
 }
 
 func compterPrets() (int, int) {
 	prets := 0
-	for _, j := range joueurs { if j.Pret { prets++ } }
+	for _, j := range joueurs {
+		if j.Pret {
+			prets++
+		}
+	}
 	return prets, len(joueurs)
 }
 
@@ -310,10 +401,15 @@ func envoyerEtat() {
 	jListe := []joueurDonnees{}
 	dest := []*websocket.Conn{}
 	for c, j := range joueurs {
-		dest = append(dest, c); jListe = append(jListe, *j)
-		if j.Actif { etat.Actifs++ }
+		dest = append(dest, c)
+		jListe = append(jListe, *j)
+		if j.Actif {
+			etat.Actifs++
+		}
 	}
 	etat.Joueurs = jListe
 	mu.Unlock()
-	for _, c := range dest { c.WriteJSON(etat) }
+	for _, c := range dest {
+		c.WriteJSON(etat)
+	}
 }

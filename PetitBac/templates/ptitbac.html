@@ -4,10 +4,64 @@
     <meta charset="UTF-8">
     <title>Petit Bac multijoueur - WebSocket</title>
     <link rel="stylesheet" href="../Pstatic/styles.css">
+    <style>
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-bottom: 2px solid #ff69b4;
+            margin-bottom: 1rem;
+        }
+        .game-header h1 {
+            margin: 0;
+        }
+        .header-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .user-display {
+            font-weight: bold;
+            color: #ff69b4;
+        }
+        .btn-logout {
+            padding: 0.5rem 1rem;
+            background: #ff1493;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-logout:hover {
+            background: #ff69b4;
+        }
+        .btn-home {
+            padding: 0.5rem 1rem;
+            background: #89cff0;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .btn-home:hover {
+            background: #6bb3d6;
+        }
+    </style>
 </head>
 <body>
 
-<h1>Petit Bac multijoueur en temps reel</h1>
+<div class="game-header">
+    <h1>Petit Bac multijoueur en temps reel</h1>
+    <div class="header-nav" id="headerNav">
+        <a href="/" class="btn-home">Accueil</a>
+        <span class="user-display" id="userDisplay"></span>
+        <a href="/logout" class="btn-logout">Deconnexion</a>
+    </div>
+</div>
 
 <section class="entete-lettre">
     <p>
@@ -340,6 +394,26 @@
             });
         }
     });
+</script>
+
+<script>
+    async function loadUserInfo() {
+        try {
+            const response = await fetch('/api/user');
+            const data = await response.json();
+            
+            if (data.authenticated) {
+                const userDisplay = document.getElementById('userDisplay');
+                if (userDisplay) {
+                    userDisplay.textContent = `Salut, ${data.pseudo} 🎀`;
+                }
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement des informations utilisateur:', error);
+        }
+    }
+    
+    loadUserInfo();
 </script>
 
 </html>

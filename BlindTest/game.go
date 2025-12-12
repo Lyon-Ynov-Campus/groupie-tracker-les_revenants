@@ -788,12 +788,12 @@ func getGenreID(playlist string) int {
 	return 0
 }
 
-func RegisterRoutes() {
-    // 1. La page HTML du jeu
-    http.HandleFunc("/BlindTest", func(w http.ResponseWriter, r *http.Request) {
+func RegisterRoutes(authMiddleware func(http.HandlerFunc) http.HandlerFunc) {
+    // 1. La page HTML du jeu (protégée par authentification)
+    http.HandleFunc("/BlindTest", authMiddleware(func(w http.ResponseWriter, r *http.Request) {
         // Attention au chemin : on part de la racine du projet
         http.ServeFile(w, r, "BlindTest/static/index.html")
-    })
+    }))
 
     // 2. Le WebSocket (On utilise une route différente de PetitBac !)
     http.HandleFunc("/blindtest/ws", handleWebSocket)

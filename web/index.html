@@ -18,7 +18,7 @@
 
             <h1 class="nav-title">Groupie Tracker</h1>
 
-            <div class="nav-links">
+            <div class="nav-links" id="navLinks">
                 <a href="/login" class="btn-secondary">Connexion</a>
                 <a href="/register" class="btn-primary">S'inscrire 🎀</a>
             </div>
@@ -69,6 +69,28 @@
     <footer class="dark-footer">
         <p>🤘 A FAIRE 🤘</p>
     </footer>
+
+    <script>
+        async function checkAuthStatus() {
+            try {
+                const response = await fetch('/api/user');
+                const data = await response.json();
+                
+                const navLinks = document.getElementById('navLinks');
+                
+                if (data.authenticated) {
+                    navLinks.innerHTML = `
+                        <span class="user-info">Salut, ${data.pseudo} 🎀</span>
+                        <a href="/logout" class="btn-secondary">Déconnexion</a>
+                    `;
+                }
+            } catch (error) {
+                console.error('Erreur lors de la vérification de l\'authentification:', error);
+            }
+        }
+
+        checkAuthStatus();
+    </script>
 
 </body>
 </html>
