@@ -5,6 +5,11 @@ let username = '';
 let gameTimer = null;
 let timerDuration = 30;
 let audio = null;
+let lastGameConfig = {
+    playlist: 'generale',
+    rounds: 5,
+    time: 30
+};
 
 const screens = {
     home: document.getElementById('home-screen'),
@@ -34,12 +39,47 @@ function setupEventListeners() {
             submitAnswer();
         }
     });
-    document.getElementById('back-home-btn').addEventListener('click', () => {
-        if (ws) {
-            ws.close();
-        }
-        showScreen('home');
-    });
+    document.getElementById('back-home-btn').addEventListener('click', backToHome);
+    document.getElementById('replay-btn').addEventListener('click', replayGame);
+}
+
+function backToHome() {
+    if (ws) {
+        ws.close();
+        ws = null;
+    }
+    window.location.href = '/';
+}
+
+function replayGame() {
+    if (ws) {
+        ws.close();
+        ws = null;
+    }
+    
+    currentRoomId = null;
+    currentPlayerId = null;
+    document.getElementById('ready-btn').disabled = false;
+    document.getElementById('ready-btn').textContent = 'Prêt !';
+    
+    document.getElementById('playlist-select').value = lastGameConfig.playlist;
+    document.getElementById('rounds-input').value = lastGameConfig.rounds;
+    document.getElementById('time-input').value = lastGameConfig.time;
+    updateGenreDescription();
+    
+    timerDuration = lastGameConfig.time;
+    
+    connectWebSocket();
+    
+    ws.onopen = () => {
+        ws.send(JSON.stringify({
+            type: 'create_room',
+            username: username,
+            playlist: lastGameConfig.playlist,
+            maxRounds: lastGameConfig.rounds,
+            roundTime: lastGameConfig.time
+        }));
+    };
 }
 
 function connectWebSocket() {
@@ -142,6 +182,12 @@ function createRoom() {
     }
 
     timerDuration = time;
+    
+    lastGameConfig = {
+        playlist: playlist,
+        rounds: rounds,
+        time: time
+    };
 
     connectWebSocket();
 

@@ -412,6 +412,18 @@ input[type="text"]::placeholder {
     margin: 30px 0;
 }
 
+.end-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.end-buttons .btn {
+    flex: 1;
+    max-width: 250px;
+}
+
 .result-item {
     display: flex;
     justify-content: space-between;
@@ -473,52 +485,12 @@ input[type="text"]::placeholder {
     .answer-section button {
         width: 100%;
     }
+    
+    .end-buttons {
+        flex-direction: column;
+    }
+    
+    .end-buttons .btn {
+        max-width: 100%;
+    }
 }
-.game-header-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            padding: 1rem 2rem;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            z-index: 10000;
-            gap: 1rem;
-        }
-        .user-display-header {
-            color: #ff69b4;
-            font-weight: bold;
-            font-size: 0.95rem;
-        }
-        .btn-header-logout {
-            padding: 0.5rem 1rem;
-            background: #ff1493;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        .btn-header-logout:hover {
-            background: #ff69b4;
-        }
-        .btn-header-home {
-            padding: 0.5rem 1rem;
-            background: #89cff0;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        .btn-header-home:hover {
-            background: #6bb3d6;
-        }
-        body {
-            padding-top: 60px;
-        }
