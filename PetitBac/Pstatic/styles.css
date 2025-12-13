@@ -309,13 +309,6 @@ button:disabled {
     border-color: #ff69b4;
 }
 
-<<<<<<< HEAD
-.choice-card h3 {
-    margin-top: 0;
-}
-
-=======
->>>>>>> v1seb
 .choice-card ul {
     padding-left: 1rem;
     color: #4c4c4c;
@@ -461,13 +454,6 @@ button:disabled {
     border: 1px solid #ffe1f0;
 }
 
-<<<<<<< HEAD
-.summary-card ul {
-    padding-left: 1.5rem;
-}
-
-=======
->>>>>>> v1seb
 .two-columns {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -485,31 +471,9 @@ button:disabled {
     text-align: center;
 }
 
-<<<<<<< HEAD
-.ready-room .host-infos {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.room-details {
-    list-style: none;
-    padding-left: 0;
-    margin: 1rem 0;
-}
-
-.room-details li {
-    margin-bottom: 0.4rem;
-}
-
-.room-note {
-    color: #666;
-=======
 .ready-room .room-details {
     list-style: none;
     padding-left: 0;
->>>>>>> v1seb
 }
 
 .waiting-room {
@@ -518,15 +482,7 @@ button:disabled {
     gap: 1.5rem;
 }
 
-<<<<<<< HEAD
-.waiting-config ul li {
-    margin-bottom: 0.4rem;
-}
-
-.waiting-scoreboard .waiting-header {
-=======
 .waiting-header {
->>>>>>> v1seb
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -538,14 +494,11 @@ button:disabled {
     color: #555;
 }
 
-<<<<<<< HEAD
-=======
 .waiting-tip {
     color: #666;
     margin-top: 0.8rem;
 }
 
->>>>>>> v1seb
 .form-error {
     color: #ff1493;
     font-weight: bold;

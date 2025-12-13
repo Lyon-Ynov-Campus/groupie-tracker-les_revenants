@@ -40,10 +40,6 @@ function connecterWebSocket() {
     socket = new WebSocket(url);
 
     socket.onopen = function () {
-<<<<<<< HEAD
-        console.log("WebSocket connecte");
-=======
->>>>>>> v1seb
         envoyerPseudoAuto();
     };
 
