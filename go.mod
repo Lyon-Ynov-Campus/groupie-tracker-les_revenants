@@ -9,7 +9,10 @@ require (
 	github.com/gorilla/websocket v1.5.3
 )
 
-require modernc.org/sqlite v1.40.1
+require (
+	golang.org/x/crypto v0.46.0
+	modernc.org/sqlite v1.40.1
+)
 
 require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
