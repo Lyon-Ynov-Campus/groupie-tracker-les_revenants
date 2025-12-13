@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Petit Bac - Choisis ton option</title>
+    <link rel="stylesheet" href="../Pstatic/styles.css">
+</head>
+<body class="pb-shell">
+<header class="pb-header">
+    <div>
+        <p class="pb-tagline">HellokiBeat</p>
+        <h1 class="pb-title">Petit Bac multijoueur</h1>
+        <p class="pb-subtitle">Deux portes d'entree : construit ton salon ou rejoins un ami.</p>
+    </div>
+    <a class="btn-link" href="/">Retour accueil</a>
+</header>
+
+<main class="pb-container">
+    <section class="pb-card pb-intro">
+        <h2>Choisis ton camp</h2>
+        <p>Tu peux parametrer un salon complet (categories, temps, manches) ou bien entrer un code partage par un ami.</p>
+    </section>
+
+    <section class="choice-grid">
+        <article class="choice-card">
+            <h3>Option 1 - Creer un salon</h3>
+            <ul>
+                <li>Selectionne les categories qui feront chauffer les cerveaux</li>
+                <li>Choisis le temps par manche et le nombre de rounds</li>
+                <li>Partage le code genere automatiquement</li>
+            </ul>
+            <a class="btn-option" href="/PetitBac/create/categories">Creer un salon</a>
+        </article>
+
+        <article class="choice-card">
+            <h3>Option 2 - Rejoindre avec un code</h3>
+            <ul>
+                <li>Ton ami est l'hote et a deja regler la partie</li>
+                <li>Entre son code pour acceder a la salle d'attente</li>
+                <li>Observe les joueurs connectes puis lance la partie</li>
+            </ul>
+            <a class="btn-option secondary" href="/PetitBac/join">Rejoindre un salon</a>
+        </article>
+    </section>
+</main>
+</body>
+</html>

@@ -29,6 +29,7 @@ func (s *salon) boucleWS(conn *websocket.Conn) {
 		case "join":
 			if n := strings.TrimSpace(msg.Nom); n != "" {
 				j.Nom = n
+				recordPlayerEntry(s.code, j.Nom)
 			}
 		case "answers":
 			if s.mancheEnCours && j.Actif {
@@ -91,6 +92,8 @@ func (s *salon) envoyerEtat() {
 	etat.Joueurs = jListe
 	etat.CompteurTotal = len(s.joueurs)
 	s.mu.Unlock()
+
+	persistPlayersSnapshot(s.code, jListe)
 
 	for _, c := range dest {
 		c.WriteJSON(etat)

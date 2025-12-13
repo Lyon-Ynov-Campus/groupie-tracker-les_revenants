@@ -2,9 +2,34 @@
 
 let socket = null;
 let identifiantClient = null;
+let pseudoAutomatique = "";
+let pseudoEnvoyeAuto = false;
 const urlParams = new URLSearchParams(window.location.search);
 const body = document.body || document.getElementsByTagName("body")[0];
 const salonCode = (urlParams.get("room") || (body ? body.getAttribute("data-room-code") : "") || "").trim().toUpperCase();
+
+function renseignerPseudoAuto(pseudo) {
+    if (!pseudo) {
+        return;
+    }
+    pseudoAutomatique = pseudo;
+    const input = document.getElementById("pseudo");
+    if (input && !input.value) {
+        input.value = pseudoAutomatique;
+    }
+    envoyerPseudoAuto();
+}
+
+function envoyerPseudoAuto() {
+    if (!pseudoAutomatique || pseudoEnvoyeAuto || !socket || socket.readyState !== WebSocket.OPEN) {
+        return;
+    }
+    socket.send(JSON.stringify({
+        type: "join",
+        name: pseudoAutomatique
+    }));
+    pseudoEnvoyeAuto = true;
+}
 
 function connecterWebSocket() {
     const proto = (window.location.protocol === "https:") ? "wss://" : "ws://";
@@ -15,7 +40,7 @@ function connecterWebSocket() {
     socket = new WebSocket(url);
 
     socket.onopen = function () {
-        console.log("WebSocket connecte");
+        envoyerPseudoAuto();
     };
 
     socket.onmessage = function (event) {
@@ -26,6 +51,7 @@ function connecterWebSocket() {
         }
         if (data.type === "identity") {
             identifiantClient = data.id;
+            envoyerPseudoAuto();
         }
     };
 
@@ -136,7 +162,7 @@ function mettreAJourEtat(etat) {
                 msg.textContent = "";
             }
         } else if (etat.waitingRestart) {
-            msg.textContent = "Manche terminee. Vote \"Oui, je rejoue\" (plus d'un tiers des joueurs requis).";
+            msg.textContent = "Manche terminee. Vote \"Oui, je rejoue\" (plus d'un tiers requis).";
         } else {
             msg.textContent = "Manche terminee ! (un joueur a tout rempli ou le temps est ecoule)";
         }
@@ -182,13 +208,17 @@ function mettreAJourEtat(etat) {
 async function loadUserInfo() {
     try {
         const response = await fetch("/api/user");
+        if (!response.ok) {
+            return;
+        }
         const data = await response.json();
 
         if (data.authenticated) {
             const userDisplay = document.getElementById("userDisplay");
             if (userDisplay) {
-                userDisplay.textContent = `Salut, ${data.pseudo} ??`;
+                userDisplay.textContent = `Salut, ${data.pseudo} !!`;
             }
+            renseignerPseudoAuto(data.pseudo);
         }
     } catch (error) {
         console.error("Erreur lors du chargement des informations utilisateur:", error);
@@ -214,6 +244,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     type: "join",
                     name: pseudo
                 }));
+                pseudoEnvoyeAuto = true;
             }
 
             const champs = document.querySelectorAll(".champ-categorie");
