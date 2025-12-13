@@ -394,6 +394,13 @@ button:disabled {
     font-weight: 600;
 }
 
+.category-list,
+.category-summary-list,
+.room-meta {
+    list-style: none;
+    padding-left: 0;
+}
+
 .category-custom {
     margin-bottom: 1rem;
     display: flex;
@@ -491,6 +498,33 @@ button:disabled {
 
 .room-note {
     color: #666;
+}
+
+.waiting-room {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.waiting-config ul li {
+    margin-bottom: 0.4rem;
+}
+
+.waiting-scoreboard .waiting-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.waiting-status {
+    margin: 0.5rem 0 1rem;
+    color: #555;
+}
+
+.form-error {
+    color: #ff1493;
+    font-weight: bold;
 }
 
 @media (max-width: 700px) {

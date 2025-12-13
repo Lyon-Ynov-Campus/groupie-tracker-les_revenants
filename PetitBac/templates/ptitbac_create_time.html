@@ -22,7 +22,7 @@
         <span class="step">3. Lancement</span>
     </div>
 
-    <form action="/PetitBac/play" method="get" class="pb-card">
+    <form id="timeForm" class="pb-card">
         <div class="time-grid">
             <div class="time-box">
                 <label for="duration">Temps par manche</label>
@@ -44,12 +44,17 @@
         <div class="summary-card">
             <h3>Récapitulatif rapide</h3>
             <ul>
-                <li><strong>Catégories</strong> : Animaux, Séries, Sport, Inventions...</li>
+                <li><strong>Catégories</strong> :</li>
+            </ul>
+            <ul id="categorySummary" class="category-summary-list"></ul>
+            <ul>
                 <li><strong>Durée</strong> : sélectionne ton tempo ci-dessus</li>
                 <li><strong>Participants</strong> : jusqu'à 12 joueurs</li>
             </ul>
             <p>Une fois validé, ton salon obtient un code partageable. Tout le monde joue avec les mêmes paramètres.</p>
         </div>
+
+        <p id="timeError" class="form-error"></p>
 
         <div class="form-actions">
             <a href="/PetitBac/create/categories" class="btn-option secondary">Étape précédente</a>
@@ -57,5 +62,6 @@
         </div>
     </form>
 </main>
+<script src="/Pstatic/pbFlow.js"></script>
 </body>
 </html>

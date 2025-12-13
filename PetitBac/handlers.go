@@ -31,6 +31,15 @@ func pageJoinSalon(w http.ResponseWriter, r *http.Request) {
 	renderStaticPage(w, tplJoinRoom, nil)
 }
 
+func pageWaitingRoom(w http.ResponseWriter, r *http.Request) {
+	s, err := salonFromRequest(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	renderStaticPage(w, tplWaiting, s.templateData())
+}
+
 func pageJeu(w http.ResponseWriter, r *http.Request) {
 	s, err := salonFromRequest(r)
 	if err != nil {

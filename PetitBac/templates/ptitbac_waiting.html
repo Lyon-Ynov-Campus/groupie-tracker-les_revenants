@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Salle d'attente Petit Bac</title>
+    <link rel="stylesheet" href="../Pstatic/styles.css">
+</head>
+<body class="pb-shell" data-room-code="{{.SalonCode}}">
+<header class="pb-header">
+    <div>
+        <p class="pb-tagline">Salon {{.SalonCode}}</p>
+        <h1 class="pb-title">Salle d'attente</h1>
+        <p class="pb-subtitle">Les paramètres sélectionnés sont rappelés ci-dessous. Invite tes amis avec le code.</p>
+    </div>
+    <a class="btn-link" href="/PetitBac">Changer d'option</a>
+</header>
+
+<main class="pb-container waiting-room">
+    <section class="pb-card waiting-config">
+        <h2>Paramètres retenus</h2>
+        <ul class="room-meta">
+            <li><strong>Code salon :</strong> <span id="room-code">{{.SalonCode}}</span></li>
+            <li><strong>Temps par manche :</strong> {{.TempsParManche}} secondes</li>
+            <li><strong>Nombre de manches :</strong> {{.NombreDeManches}}</li>
+        </ul>
+        <h3>Catégories</h3>
+        <ul class="category-list">
+            {{range .Categories}}
+            <li>{{.}}</li>
+            {{end}}
+        </ul>
+        <p class="waiting-tip">Les joueurs connectés apparaissent à droite. Quand tout le monde est prêt, lance la partie.</p>
+    </section>
+
+    <section class="pb-card waiting-scoreboard">
+        <div class="waiting-header">
+            <h2>Joueurs connectés</h2>
+            <button id="btn-start" class="btn-option">Lancer la partie</button>
+        </div>
+        <p id="waiting-status" class="waiting-status">En attente de joueurs...</p>
+        <table class="tableau-petit-bac">
+            <thead>
+            <tr>
+                <th>Joueur</th>
+                <th>Score total</th>
+                <th>Statut</th>
+            </tr>
+            </thead>
+            <tbody id="waiting-scores">
+            </tbody>
+        </table>
+    </section>
+</main>
+
+<script src="/Pstatic/waiting.js"></script>
+</body>
+</html>

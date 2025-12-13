@@ -14,6 +14,7 @@ var (
 	tplCreateCategories *template.Template
 	tplCreateTime       *template.Template
 	tplJoinRoom         *template.Template
+	tplWaiting          *template.Template
 	upgrader            = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool { return true },
 	}
@@ -36,12 +37,21 @@ func RegisterRoutes(authMiddleware func(http.HandlerFunc) http.HandlerFunc) erro
 	if tplJoinRoom, err = template.ParseFiles("PetitBac/templates/ptitbac_join_room.html"); err != nil {
 		return fmt.Errorf("impossible de charger PetitBac/templates/ptitbac_join_room.html: %w", err)
 	}
+	if tplWaiting, err = template.ParseFiles("PetitBac/templates/ptitbac_waiting.html"); err != nil {
+		return fmt.Errorf("impossible de charger PetitBac/templates/ptitbac_waiting.html: %w", err)
+	}
+	if err := initPetitBacStore(); err != nil {
+		return fmt.Errorf("initialisation base PetitBac: %w", err)
+	}
 
 	http.HandleFunc("/PetitBac", authMiddleware(pagePetitBacHome))
 	http.HandleFunc("/PetitBac/create/categories", authMiddleware(pageCreateCategories))
 	http.HandleFunc("/PetitBac/create/time", authMiddleware(pageCreateTime))
 	http.HandleFunc("/PetitBac/join", authMiddleware(pageJoinSalon))
+	http.HandleFunc("/PetitBac/wait", authMiddleware(pageWaitingRoom))
 	http.HandleFunc("/PetitBac/play", authMiddleware(pageJeu))
+	http.HandleFunc("/PetitBac/rooms/players", authMiddleware(handleRoomPlayers))
+	http.HandleFunc("/PetitBac/rooms/start", authMiddleware(handleStartGame))
 	http.HandleFunc("/ws", socketJeu)
 	http.HandleFunc("/config", configJeu)
 	registerSalonHandlers(authMiddleware)

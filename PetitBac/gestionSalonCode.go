@@ -40,8 +40,24 @@ func handleSalonCreate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+	var payload struct {
+		Categories []string `json:"categories"`
+		Temps      int      `json:"temps"`
+		Manches    int      `json:"manches"`
+		Host       string   `json:"host"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "invalid payload", http.StatusBadRequest)
+		return
+	}
+	reg := reglageJeu{
+		Categories: sanitizeCategories(payload.Categories),
+		Temps:      clampTemps(payload.Temps),
+		Manches:    clampRounds(payload.Manches),
+	}
 	s := salons.createSalon()
-	s.demarrerManche(false)
+	s.applyConfig(reg)
+	persistRoomConfiguration(s.code, reg, payload.Host)
 	respondJSON(w, map[string]string{"code": s.code})
 }
 
@@ -74,6 +90,50 @@ func handleSalonJoin(w http.ResponseWriter, r *http.Request) {
 func respondJSON(w http.ResponseWriter, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
+}
+
+func handleRoomPlayers(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	code := normalizeSalonCode(r.URL.Query().Get("room"))
+	if code == "" {
+		http.Error(w, "code manquant", http.StatusBadRequest)
+		return
+	}
+	players, err := fetchRoomPlayers(code)
+	if err != nil {
+		http.Error(w, "erreur base", http.StatusInternalServerError)
+		return
+	}
+	respondJSON(w, map[string]interface{}{"players": players})
+}
+
+func handleStartGame(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	var payload struct {
+		Code string `json:"code"`
+		Host string `json:"host"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "invalid payload", http.StatusBadRequest)
+		return
+	}
+	s, err := salons.getSalonForJoin(payload.Code)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	if payload.Host != "" && !isRoomHost(s.code, payload.Host) {
+		http.Error(w, "action reservee a l'hote", http.StatusForbidden)
+		return
+	}
+	s.demarrerManche(false)
+	respondJSON(w, map[string]string{"status": "started"})
 }
 
 func (m *salonManager) createSalon() *salon {
@@ -139,4 +199,45 @@ func (m *salonManager) generateCodeLocked() string {
 			return code
 		}
 	}
+}
+
+func sanitizeCategories(cats []string) []string {
+	seen := make(map[string]struct{})
+	var cleaned []string
+	for _, c := range cats {
+		c = strings.TrimSpace(c)
+		if c == "" {
+			continue
+		}
+		upper := strings.ToUpper(c)
+		if _, ok := seen[upper]; ok {
+			continue
+		}
+		seen[upper] = struct{}{}
+		cleaned = append(cleaned, c)
+	}
+	if len(cleaned) == 0 {
+		return listeCategories()
+	}
+	return cleaned
+}
+
+func clampTemps(v int) int {
+	if v < 30 {
+		return 30
+	}
+	if v > 180 {
+		return 180
+	}
+	return v
+}
+
+func clampRounds(v int) int {
+	if v < 3 {
+		return 3
+	}
+	if v > 10 {
+		return 10
+	}
+	return v
 }

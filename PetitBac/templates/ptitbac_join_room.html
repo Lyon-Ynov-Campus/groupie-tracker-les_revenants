@@ -16,12 +16,13 @@
 </header>
 
 <main class="pb-container two-columns">
-    <form action="/PetitBac/play" method="get" class="pb-card join-form">
+    <form id="joinRoomForm" class="pb-card join-form">
         <h2>Entrer un code de salon</h2>
         <p>Demande le code à l'hôte et entre-le ci-dessous.</p>
         <label for="room">Code</label>
         <input type="text" id="room" name="room" placeholder="Ex : KAWA" maxlength="4" required>
         <button type="submit" class="btn-option">Rejoindre la partie</button>
+        <p id="joinError" class="form-error"></p>
         <small>Tu seras redirigé vers la salle avec tous les paramètres définis.</small>
     </form>
 
@@ -37,8 +38,9 @@
             <li><strong>Manches :</strong> 5 rounds</li>
         </ul>
         <p class="room-note">Les joueurs déjà connectés seront notifiés de ton arrivée.</p>
-        <a href="/PetitBac/play?room=KAWA" class="btn-option secondary">Rejoindre ce salon démo</a>
+        <a href="/PetitBac/wait?room=KAWA" class="btn-option secondary">Rejoindre ce salon démo</a>
     </section>
 </main>
+<script src="/Pstatic/pbFlow.js"></script>
 </body>
 </html>

@@ -1,10 +1,35 @@
-"use strict";
+﻿"use strict";
 
 let socket = null;
 let identifiantClient = null;
+let pseudoAutomatique = "";
+let pseudoEnvoyeAuto = false;
 const urlParams = new URLSearchParams(window.location.search);
 const body = document.body || document.getElementsByTagName("body")[0];
 const salonCode = (urlParams.get("room") || (body ? body.getAttribute("data-room-code") : "") || "").trim().toUpperCase();
+
+function renseignerPseudoAuto(pseudo) {
+    if (!pseudo) {
+        return;
+    }
+    pseudoAutomatique = pseudo;
+    const input = document.getElementById("pseudo");
+    if (input && !input.value) {
+        input.value = pseudoAutomatique;
+    }
+    envoyerPseudoAuto();
+}
+
+function envoyerPseudoAuto() {
+    if (!pseudoAutomatique || pseudoEnvoyeAuto || !socket || socket.readyState !== WebSocket.OPEN) {
+        return;
+    }
+    socket.send(JSON.stringify({
+        type: "join",
+        name: pseudoAutomatique
+    }));
+    pseudoEnvoyeAuto = true;
+}
 
 function connecterWebSocket() {
     const proto = (window.location.protocol === "https:") ? "wss://" : "ws://";
@@ -16,6 +41,7 @@ function connecterWebSocket() {
 
     socket.onopen = function () {
         console.log("WebSocket connecte");
+        envoyerPseudoAuto();
     };
 
     socket.onmessage = function (event) {
@@ -189,6 +215,7 @@ async function loadUserInfo() {
             if (userDisplay) {
                 userDisplay.textContent = `Salut, ${data.pseudo} ??`;
             }
+            renseignerPseudoAuto(data.pseudo);
         }
     } catch (error) {
         console.error("Erreur lors du chargement des informations utilisateur:", error);
@@ -214,6 +241,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     type: "join",
                     name: pseudo
                 }));
+                pseudoEnvoyeAuto = true;
             }
 
             const champs = document.querySelectorAll(".champ-categorie");
