@@ -36,7 +36,7 @@ func initPetitBacStore() error {
 }
 
 func createPetitBacTables(db *sql.DB) error {
-	stmts := []string{
+	statements := []string{
 		`CREATE TABLE IF NOT EXISTS petitbac_rooms (
 			code TEXT PRIMARY KEY,
 			host TEXT NOT NULL,
@@ -54,7 +54,7 @@ func createPetitBacTables(db *sql.DB) error {
 			PRIMARY KEY (room_code, pseudo)
 		);`,
 	}
-	for _, stmt := range stmts {
+	for _, stmt := range statements {
 		if _, err := db.Exec(stmt); err != nil {
 			return err
 		}
@@ -108,7 +108,7 @@ func persistPlayersSnapshot(roomCode string, joueurs []joueurDonnees) {
 	}
 	tx, err := pbDB.Begin()
 	if err != nil {
-		log.Println("PetitBac: impossible de démarrer la sauvegarde:", err)
+		log.Println("PetitBac: impossible de demarrer la transaction de sauvegarde:", err)
 		return
 	}
 	stmt, err := tx.Prepare(`INSERT INTO petitbac_players(room_code, pseudo, total_score, updated_at)
@@ -118,7 +118,7 @@ func persistPlayersSnapshot(roomCode string, joueurs []joueurDonnees) {
 			updated_at=CURRENT_TIMESTAMP;`)
 	if err != nil {
 		tx.Rollback()
-		log.Println("PetitBac: préparation snapshot impossible:", err)
+		log.Println("PetitBac: prepare snapshot:", err)
 		return
 	}
 	defer stmt.Close()
@@ -145,16 +145,16 @@ func fetchRoomPlayers(roomCode string) ([]dbPlayer, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var players []dbPlayer
+	var results []dbPlayer
 	for rows.Next() {
 		var p dbPlayer
 		if err := rows.Scan(&p.Pseudo, &p.Score); err != nil {
 			return nil, err
 		}
 		p.Room = roomCode
-		players = append(players, p)
+		results = append(results, p)
 	}
-	return players, rows.Err()
+	return results, rows.Err()
 }
 
 func isRoomHost(roomCode, pseudo string) bool {

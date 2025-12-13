@@ -1,4 +1,4 @@
-"use strict";
+﻿"use strict";
 
 let socket = null;
 let identifiantClient = null;

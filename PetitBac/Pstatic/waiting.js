@@ -1,4 +1,4 @@
-"use strict";
+﻿"use strict";
 
 let waitingSocket = null;
 let waitingRoomCode = "";

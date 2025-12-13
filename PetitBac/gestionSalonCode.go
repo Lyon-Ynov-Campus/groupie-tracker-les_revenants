@@ -55,6 +55,7 @@ func handleSalonCreate(w http.ResponseWriter, r *http.Request) {
 		Temps:      clampTemps(payload.Temps),
 		Manches:    clampRounds(payload.Manches),
 	}
+
 	s := createConfiguredSalon(reg, payload.Host)
 	respondJSON(w, map[string]string{"code": s.code})
 }
@@ -127,7 +128,7 @@ func handleStartGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if payload.Host != "" && !isRoomHost(s.code, payload.Host) {
-		http.Error(w, "action réservée à l'hôte", http.StatusForbidden)
+		http.Error(w, "action reservee a l'hote", http.StatusForbidden)
 		return
 	}
 	s.demarrerManche(false)

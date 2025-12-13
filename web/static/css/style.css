@@ -250,6 +250,59 @@ body {
     padding-left: 10px; /* Petit effet de mouvement simple */
 }
 
+.dev-bulles {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin: 20px auto 40px;
+    max-width: 900px;
+}
+
+.dev-bulle {
+    display: flex;
+    align-items: center;
+    background-color: #1c1c1c;
+    border: 2px solid #ff69b4;
+    border-radius: 999px;
+    padding: 15px 25px;
+    min-width: 320px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+.dev-bulle img {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    margin-right: 15px;
+    border: 3px solid #ff69b4;
+    object-fit: cover;
+    background-color: #000;
+}
+
+.dev-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.dev-name {
+    margin: 0;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.dev-bulle a {
+    color: #ff69b4;
+    text-decoration: none;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.dev-bulle a:hover {
+    text-decoration: underline;
+}
+
 .barre-copyright {
     background-color: black;
     text-align: center;

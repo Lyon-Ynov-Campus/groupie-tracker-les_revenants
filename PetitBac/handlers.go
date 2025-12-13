@@ -56,7 +56,7 @@ func pageCreateCategories(w http.ResponseWriter, r *http.Request) {
 		}
 		selected = sanitizeCategories(selected)
 		if len(selected) == 0 {
-			data := buildCategoriesPageData(selected, custom, "Merci de choisir au moins une catégorie.")
+			data := buildCategoriesPageData(selected, custom, "Merci de choisir au moins une categorie.")
 			renderStaticPage(w, tplCreateCategories, data)
 			return
 		}
@@ -95,7 +95,7 @@ func pageCreateTime(w http.ResponseWriter, r *http.Request) {
 				Categories: cats,
 				Duration:   60,
 				Rounds:     5,
-				Error:      "Sélectionne au moins une catégorie.",
+				Error:      "Selectionne au moins une categorie.",
 			}
 			renderStaticPage(w, tplCreateTime, data)
 			return
@@ -117,9 +117,7 @@ func pageCreateTime(w http.ResponseWriter, r *http.Request) {
 func pageJoinSalon(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		data := joinPageData{
-			Code: normalizeSalonCode(r.URL.Query().Get("code")),
-		}
+		data := joinPageData{Code: normalizeSalonCode(r.URL.Query().Get("code"))}
 		renderStaticPage(w, tplJoinRoom, data)
 	case http.MethodPost:
 		if err := r.ParseForm(); err != nil {

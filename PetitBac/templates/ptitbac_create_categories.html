@@ -26,7 +26,6 @@
         <h2>Selectionne tes themes preferes</h2>
         {{if .Error}}<p class="form-error">{{.Error}}</p>{{end}}
         <div class="category-grid">
-            {{/* Each checkbox uses the Selected map to stay active */}}
             <label class="category-pill">
                 <input type="checkbox" name="categories" value="Animaux" {{if index .Selected "Animaux"}}checked{{end}}>
                 <span>Animaux</span>

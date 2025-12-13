@@ -52,7 +52,11 @@ func RegisterRoutes(
 		return fmt.Errorf("impossible de charger PetitBac/templates/ptitbac_waiting.html: %w", err)
 	}
 	if err := initPetitBacStore(); err != nil {
+
+		return fmt.Errorf("initialisation base PetitBac: %w", err)
+
 		return fmt.Errorf("initialisation base Petit Bac: %w", err)
+
 	}
 
 	http.HandleFunc("/PetitBac", authMiddleware(pagePetitBacHome))
