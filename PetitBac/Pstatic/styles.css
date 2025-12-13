@@ -221,3 +221,289 @@ button:disabled {
 .btn-home:hover {
     background: #6bb3d6;
 }
+
+/* Pages d'orientation Petit Bac */
+.pb-shell {
+    background: radial-gradient(circle at top, #ffeaf4 0%, #f1f1f1 45%, #fdfbff 100%);
+    min-height: 100vh;
+    margin: 0;
+    font-family: "Poppins", Arial, sans-serif;
+    color: #1f1f1f;
+    padding: 0 2rem 2rem;
+}
+
+.pb-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 2rem 0 1rem;
+    gap: 1rem;
+}
+
+.pb-tagline {
+    text-transform: uppercase;
+    letter-spacing: 0.2rem;
+    color: #ff69b4;
+    font-weight: bold;
+    margin: 0 0 0.3rem;
+}
+
+.pb-title {
+    margin: 0;
+    font-size: 2.5rem;
+}
+
+.pb-subtitle {
+    margin: 0.2rem 0 0;
+    color: #4c4c4c;
+}
+
+.btn-link {
+    color: #ff69b4;
+    text-decoration: none;
+    font-weight: bold;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.btn-link:hover {
+    border-color: #ff69b4;
+}
+
+.pb-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.pb-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 2rem;
+    box-shadow: 0 30px 50px rgba(255, 105, 180, 0.15);
+}
+
+.pb-intro h2 {
+    margin-top: 0;
+}
+
+.choice-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.choice-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 1.8rem;
+    box-shadow: 0 20px 35px rgba(0, 0, 0, 0.08);
+    border: 2px solid transparent;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.choice-card:hover {
+    transform: translateY(-6px);
+    border-color: #ff69b4;
+}
+
+.choice-card h3 {
+    margin-top: 0;
+}
+
+.choice-card ul {
+    padding-left: 1rem;
+    color: #4c4c4c;
+}
+
+.btn-option {
+    display: inline-block;
+    background: linear-gradient(135deg, #ff69b4, #ff1493);
+    color: #fff;
+    text-decoration: none;
+    padding: 0.9rem 1.8rem;
+    border-radius: 999px;
+    font-weight: bold;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-option:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 25px rgba(255, 105, 180, 0.35);
+}
+
+.btn-option.secondary {
+    background: transparent;
+    border: 2px solid #ff69b4;
+    color: #ff69b4;
+    box-shadow: none;
+}
+
+.pb-steps {
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.step {
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    background: #f0f0f0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #555;
+}
+
+.step.active {
+    background: #ff69b4;
+    color: white;
+}
+
+.step.done {
+    background: #9cd3ff;
+    color: #064b75;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.8rem;
+    margin: 1.5rem 0;
+}
+
+.category-pill {
+    border: 1px solid #ffb4d7;
+    border-radius: 999px;
+    padding: 0.4rem 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+}
+
+.category-pill input {
+    accent-color: #ff69b4;
+}
+
+.category-pill span {
+    font-weight: 600;
+}
+
+.category-custom {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.category-custom input {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 0.6rem;
+    font-size: 1rem;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+}
+
+.time-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+}
+
+.time-box label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.4rem;
+}
+
+.time-box select,
+.time-box input {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 0.7rem;
+    font-size: 1rem;
+}
+
+.time-box small {
+    display: block;
+    margin-top: 0.4rem;
+    color: #777;
+}
+
+.summary-card {
+    margin: 1.5rem 0;
+    padding: 1.5rem;
+    background: #fff8fb;
+    border-radius: 12px;
+    border: 1px solid #ffe1f0;
+}
+
+.summary-card ul {
+    padding-left: 1.5rem;
+}
+
+.two-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.join-form input {
+    border: 2px dashed #ff69b4;
+    border-radius: 14px;
+    padding: 0.9rem 1rem;
+    font-size: 1.2rem;
+    letter-spacing: 0.3rem;
+    text-transform: uppercase;
+    margin: 0.5rem 0 1rem;
+    text-align: center;
+}
+
+.ready-room .host-infos {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.room-details {
+    list-style: none;
+    padding-left: 0;
+    margin: 1rem 0;
+}
+
+.room-details li {
+    margin-bottom: 0.4rem;
+}
+
+.room-note {
+    color: #666;
+}
+
+@media (max-width: 700px) {
+    .pb-shell {
+        padding: 0 1rem 2rem;
+    }
+
+    .pb-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .form-actions {
+        justify-content: center;
+    }
+}

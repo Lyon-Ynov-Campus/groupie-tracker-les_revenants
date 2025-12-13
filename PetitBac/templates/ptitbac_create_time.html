@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Petit Bac - Paramètre ton timer</title>
+    <link rel="stylesheet" href="../Pstatic/styles.css">
+</head>
+<body class="pb-shell">
+<header class="pb-header">
+    <div>
+        <p class="pb-tagline">Création de salon</p>
+        <h1 class="pb-title">Étape 2 · Temps et manches</h1>
+        <p class="pb-subtitle">Plus c'est court, plus la pression monte.</p>
+    </div>
+    <a class="btn-link" href="/PetitBac/create/categories">Modifier les catégories</a>
+</header>
+
+<main class="pb-container steps">
+    <div class="pb-steps">
+        <span class="step done">1. Catégories</span>
+        <span class="step active">2. Temps</span>
+        <span class="step">3. Lancement</span>
+    </div>
+
+    <form action="/PetitBac/play" method="get" class="pb-card">
+        <div class="time-grid">
+            <div class="time-box">
+                <label for="duration">Temps par manche</label>
+                <select id="duration" name="duration">
+                    <option value="30">30 secondes - ultra speedrun</option>
+                    <option value="45">45 secondes - tempo nerveux</option>
+                    <option value="60" selected>60 secondes - rythme normal</option>
+                    <option value="90">90 secondes - chill</option>
+                </select>
+            </div>
+
+            <div class="time-box">
+                <label for="rounds">Nombre de manches</label>
+                <input type="number" id="rounds" name="rounds" min="3" max="10" value="5">
+                <small>Entre 3 et 10 manches pour garder de la tension</small>
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <h3>Récapitulatif rapide</h3>
+            <ul>
+                <li><strong>Catégories</strong> : Animaux, Séries, Sport, Inventions...</li>
+                <li><strong>Durée</strong> : sélectionne ton tempo ci-dessus</li>
+                <li><strong>Participants</strong> : jusqu'à 12 joueurs</li>
+            </ul>
+            <p>Une fois validé, ton salon obtient un code partageable. Tout le monde joue avec les mêmes paramètres.</p>
+        </div>
+
+        <div class="form-actions">
+            <a href="/PetitBac/create/categories" class="btn-option secondary">Étape précédente</a>
+            <button type="submit" class="btn-option">Créer le salon</button>
+        </div>
+    </form>
+</main>
+</body>
+</html>

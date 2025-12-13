@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Petit Bac - Rejoindre un salon</title>
+    <link rel="stylesheet" href="../Pstatic/styles.css">
+</head>
+<body class="pb-shell">
+<header class="pb-header">
+    <div>
+        <p class="pb-tagline">Option 2</p>
+        <h1 class="pb-title">Rejoins un salon existant</h1>
+        <p class="pb-subtitle">Un hôte a déjà fait les réglages. Tu n'as plus qu'à entrer son code.</p>
+    </div>
+    <a class="btn-link" href="/PetitBac">Changer d'option</a>
+</header>
+
+<main class="pb-container two-columns">
+    <form action="/PetitBac/play" method="get" class="pb-card join-form">
+        <h2>Entrer un code de salon</h2>
+        <p>Demande le code à l'hôte et entre-le ci-dessous.</p>
+        <label for="room">Code</label>
+        <input type="text" id="room" name="room" placeholder="Ex : KAWA" maxlength="4" required>
+        <button type="submit" class="btn-option">Rejoindre la partie</button>
+        <small>Tu seras redirigé vers la salle avec tous les paramètres définis.</small>
+    </form>
+
+    <section class="pb-card ready-room">
+        <h2>Salon prêt à jouer</h2>
+        <div class="host-infos">
+            <p><strong>Hôte :</strong> Ludivine</p>
+            <p><strong>Code :</strong> KAWA</p>
+        </div>
+        <ul class="room-details">
+            <li><strong>Catégories :</strong> Séries, Animaux, Sport, Villes, Cocktails</li>
+            <li><strong>Temps :</strong> 60 sec par manche</li>
+            <li><strong>Manches :</strong> 5 rounds</li>
+        </ul>
+        <p class="room-note">Les joueurs déjà connectés seront notifiés de ton arrivée.</p>
+        <a href="/PetitBac/play?room=KAWA" class="btn-option secondary">Rejoindre ce salon démo</a>
+    </section>
+</main>
+</body>
+</html>

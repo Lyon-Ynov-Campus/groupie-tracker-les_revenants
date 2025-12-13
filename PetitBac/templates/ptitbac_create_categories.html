@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Petit Bac - Choisis tes catégories</title>
+    <link rel="stylesheet" href="../Pstatic/styles.css">
+</head>
+<body class="pb-shell">
+<header class="pb-header">
+    <div>
+        <p class="pb-tagline">Création de salon</p>
+        <h1 class="pb-title">Étape 1 · Catégories</h1>
+        <p class="pb-subtitle">Sélectionne les thèmes qui seront proposés pendant la partie.</p>
+    </div>
+    <a class="btn-link" href="/PetitBac">Changer d'option</a>
+</header>
+
+<main class="pb-container steps">
+    <div class="pb-steps">
+        <span class="step active">1. Catégories</span>
+        <span class="step">2. Temps</span>
+        <span class="step">3. Lancement</span>
+    </div>
+
+    <form action="/PetitBac/create/time" method="get" class="pb-card">
+        <h2>Choisis au moins 6 catégories</h2>
+        <p>Les catégories sélectionnées seront proposées à tous les joueurs pendant chaque manche.</p>
+
+        <div class="category-grid">
+            <label class="category-pill">
+                <input type="checkbox" name="categories" value="Animaux" checked>
+                <span>Animaux</span>
+            </label>
+            <label class="category-pill">
+                <input type="checkbox" name="categories" value="Villes">
+                <span>Villes</span>
+            </label>
+            <label class="category-pill">
+                <input type="checkbox" name="categories" value="Personnages">
+                <span>Personnages célèbres</span>
+            </label>
+            <label class="category-pill">
+                <input type="checkbox" name="categories" value="Objets">
+                <span>Objets du quotidien</span>
+            </label>
+            <label class="category-pill">
+                <input type="checkbox" name="categories" value="Musiques">
+                <span>Musiques / Artistes</span>
+            </label>
+            <label class="category-pill">
+                <input type="checkbox" name="categories" value="Nourriture">
+                <span>Nourriture</span>
+            </label>
+            <label class="category-pill">
+                <input type="checkbox" name="categories" value="Series">
+                <span>Séries</span>
+            </label>
+            <label class="category-pill">
+                <input type="checkbox" name="categories" value="Sport">
+                <span>Sport</span>
+            </label>
+            <label class="category-pill">
+                <input type="checkbox" name="categories" value="Inventions">
+                <span>Inventions</span>
+            </label>
+        </div>
+
+        <div class="category-custom">
+            <label for="custom-category">Ajoute ta catégorie personnalisée</label>
+            <input type="text" id="custom-category" name="custom" placeholder="Ex : jeux vidéo, cocktail, etc.">
+        </div>
+
+        <div class="form-actions">
+            <a href="/PetitBac" class="btn-option secondary">Retour</a>
+            <button type="submit" class="btn-option">Valider mes catégories</button>
+        </div>
+    </form>
+</main>
+</body>
+</html>

@@ -3,9 +3,33 @@ package petitbac
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 )
+
+func renderStaticPage(w http.ResponseWriter, tpl *template.Template, data any) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := tpl.Execute(w, data); err != nil {
+		log.Println("Erreur d'affichage du template Petit Bac:", err)
+	}
+}
+
+func pagePetitBacHome(w http.ResponseWriter, r *http.Request) {
+	renderStaticPage(w, tplHome, nil)
+}
+
+func pageCreateCategories(w http.ResponseWriter, r *http.Request) {
+	renderStaticPage(w, tplCreateCategories, nil)
+}
+
+func pageCreateTime(w http.ResponseWriter, r *http.Request) {
+	renderStaticPage(w, tplCreateTime, nil)
+}
+
+func pageJoinSalon(w http.ResponseWriter, r *http.Request) {
+	renderStaticPage(w, tplJoinRoom, nil)
+}
 
 func pageJeu(w http.ResponseWriter, r *http.Request) {
 	s, err := salonFromRequest(r)
