@@ -20,10 +20,7 @@ var (
 	tplCreateTime       *template.Template
 	tplJoinRoom         *template.Template
 	tplWaiting          *template.Template
-<<<<<<< HEAD
-=======
 	userResolver        func(*http.Request) (*UserInfo, error)
->>>>>>> v1seb
 	upgrader            = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool { return true },
 	}
@@ -34,11 +31,8 @@ func RegisterRoutes(
 	resolver func(*http.Request) (*UserInfo, error),
 ) error {
 	var err error
-<<<<<<< HEAD
-=======
 	userResolver = resolver
 
->>>>>>> v1seb
 	if tplJeu, err = template.ParseFiles("PetitBac/templates/ptitbac.html"); err != nil {
 		return fmt.Errorf("impossible de charger PetitBac/templates/ptitbac.html: %w", err)
 	}
@@ -58,11 +52,11 @@ func RegisterRoutes(
 		return fmt.Errorf("impossible de charger PetitBac/templates/ptitbac_waiting.html: %w", err)
 	}
 	if err := initPetitBacStore(); err != nil {
-<<<<<<< HEAD
+
 		return fmt.Errorf("initialisation base PetitBac: %w", err)
-=======
+
 		return fmt.Errorf("initialisation base Petit Bac: %w", err)
->>>>>>> v1seb
+
 	}
 
 	http.HandleFunc("/PetitBac", authMiddleware(pagePetitBacHome))

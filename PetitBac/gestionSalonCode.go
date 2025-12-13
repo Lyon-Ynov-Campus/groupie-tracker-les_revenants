@@ -55,13 +55,8 @@ func handleSalonCreate(w http.ResponseWriter, r *http.Request) {
 		Temps:      clampTemps(payload.Temps),
 		Manches:    clampRounds(payload.Manches),
 	}
-<<<<<<< HEAD
-	s := salons.createSalon()
-	s.applyConfig(reg)
-	persistRoomConfiguration(s.code, reg, payload.Host)
-=======
+
 	s := createConfiguredSalon(reg, payload.Host)
->>>>>>> v1seb
 	respondJSON(w, map[string]string{"code": s.code})
 }
 
@@ -133,11 +128,7 @@ func handleStartGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if payload.Host != "" && !isRoomHost(s.code, payload.Host) {
-<<<<<<< HEAD
 		http.Error(w, "action reservee a l'hote", http.StatusForbidden)
-=======
-		http.Error(w, "action réservée à l'hôte", http.StatusForbidden)
->>>>>>> v1seb
 		return
 	}
 	s.demarrerManche(false)
@@ -209,11 +200,6 @@ func (m *salonManager) generateCodeLocked() string {
 	}
 }
 
-<<<<<<< HEAD
-func sanitizeCategories(cats []string) []string {
-	seen := make(map[string]struct{})
-	var cleaned []string
-=======
 func createConfiguredSalon(reg reglageJeu, host string) *salon {
 	s := salons.createSalon()
 	s.applyConfig(reg)
@@ -224,25 +210,11 @@ func createConfiguredSalon(reg reglageJeu, host string) *salon {
 func sanitizeCategories(cats []string) []string {
 	seen := make(map[string]struct{})
 	res := []string{}
->>>>>>> v1seb
 	for _, c := range cats {
 		c = strings.TrimSpace(c)
 		if c == "" {
 			continue
 		}
-<<<<<<< HEAD
-		upper := strings.ToUpper(c)
-		if _, ok := seen[upper]; ok {
-			continue
-		}
-		seen[upper] = struct{}{}
-		cleaned = append(cleaned, c)
-	}
-	if len(cleaned) == 0 {
-		return listeCategories()
-	}
-	return cleaned
-=======
 		key := strings.ToUpper(c)
 		if _, ok := seen[key]; ok {
 			continue
@@ -254,7 +226,6 @@ func sanitizeCategories(cats []string) []string {
 		return listeCategories()
 	}
 	return res
->>>>>>> v1seb
 }
 
 func clampTemps(v int) int {

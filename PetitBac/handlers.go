@@ -11,16 +11,6 @@ import (
 	"strings"
 )
 
-<<<<<<< HEAD
-func renderStaticPage(w http.ResponseWriter, tpl *template.Template, data any) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := tpl.Execute(w, data); err != nil {
-		log.Println("Erreur d'affichage du template Petit Bac:", err)
-	}
-}
-
-func pagePetitBacHome(w http.ResponseWriter, r *http.Request) {
-=======
 type categoriesPageData struct {
 	Selected map[string]bool
 	Custom   string
@@ -45,22 +35,10 @@ type waitingPageData struct {
 }
 
 func pagePetitBacHome(w http.ResponseWriter, _ *http.Request) {
->>>>>>> v1seb
 	renderStaticPage(w, tplHome, nil)
 }
 
 func pageCreateCategories(w http.ResponseWriter, r *http.Request) {
-<<<<<<< HEAD
-	renderStaticPage(w, tplCreateCategories, nil)
-}
-
-func pageCreateTime(w http.ResponseWriter, r *http.Request) {
-	renderStaticPage(w, tplCreateTime, nil)
-}
-
-func pageJoinSalon(w http.ResponseWriter, r *http.Request) {
-	renderStaticPage(w, tplJoinRoom, nil)
-=======
 	switch r.Method {
 	case http.MethodGet:
 		selected := sanitizeCategories(r.URL.Query()["cats"])
@@ -78,7 +56,7 @@ func pageJoinSalon(w http.ResponseWriter, r *http.Request) {
 		}
 		selected = sanitizeCategories(selected)
 		if len(selected) == 0 {
-			data := buildCategoriesPageData(selected, custom, "Merci de choisir au moins une catégorie.")
+			data := buildCategoriesPageData(selected, custom, "Merci de choisir au moins une categorie.")
 			renderStaticPage(w, tplCreateCategories, data)
 			return
 		}
@@ -117,7 +95,7 @@ func pageCreateTime(w http.ResponseWriter, r *http.Request) {
 				Categories: cats,
 				Duration:   60,
 				Rounds:     5,
-				Error:      "Sélectionne au moins une catégorie.",
+				Error:      "Selectionne au moins une categorie.",
 			}
 			renderStaticPage(w, tplCreateTime, data)
 			return
@@ -139,9 +117,7 @@ func pageCreateTime(w http.ResponseWriter, r *http.Request) {
 func pageJoinSalon(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		data := joinPageData{
-			Code: normalizeSalonCode(r.URL.Query().Get("code")),
-		}
+		data := joinPageData{Code: normalizeSalonCode(r.URL.Query().Get("code"))}
 		renderStaticPage(w, tplJoinRoom, data)
 	case http.MethodPost:
 		if err := r.ParseForm(); err != nil {
@@ -166,7 +142,6 @@ func pageJoinSalon(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 	}
->>>>>>> v1seb
 }
 
 func pageWaitingRoom(w http.ResponseWriter, r *http.Request) {
@@ -175,9 +150,6 @@ func pageWaitingRoom(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-<<<<<<< HEAD
-	renderStaticPage(w, tplWaiting, s.templateData())
-=======
 	players, err := fetchRoomPlayers(s.code)
 	if err != nil {
 		log.Println("PetitBac: impossible de charger les joueurs:", err)
@@ -194,7 +166,6 @@ func renderStaticPage(w http.ResponseWriter, tpl *template.Template, data any) {
 	if err := tpl.Execute(w, data); err != nil {
 		log.Println("Erreur affichage template Petit Bac:", err)
 	}
->>>>>>> v1seb
 }
 
 func pageJeu(w http.ResponseWriter, r *http.Request) {
