@@ -3,7 +3,11 @@
 let waitingSocket = null;
 let waitingRoomCode = "";
 let waitingPseudo = "";
+<<<<<<< HEAD
 let pseudoSent = false;
+=======
+let pseudoEnvoye = false;
+>>>>>>> v1seb
 
 function getRoomCode() {
     if (waitingRoomCode) {
@@ -27,17 +31,30 @@ async function fetchUserPseudo() {
         }
         const data = await response.json();
         waitingPseudo = data && data.pseudo ? data.pseudo : "";
+<<<<<<< HEAD
         trySendJoin();
     } catch (err) {
         console.error("PetitBac: utilisateur indisponible", err);
+=======
+        envoyerPseudoSalle();
+    } catch (err) {
+        console.error("PetitBac: impossible de recuperer l'utilisateur", err);
+>>>>>>> v1seb
     }
     return waitingPseudo;
 }
 
+<<<<<<< HEAD
 function connectWaitingSocket() {
     const code = getRoomCode();
     if (!code) {
         console.error("PetitBac: aucun code fourni pour la salle d'attente");
+=======
+function connecterSalle() {
+    const code = getRoomCode();
+    if (!code) {
+        console.error("PetitBac: aucun code de salle pour la salle d'attente");
+>>>>>>> v1seb
         return;
     }
     const proto = (window.location.protocol === "https:") ? "wss://" : "ws://";
@@ -45,13 +62,21 @@ function connectWaitingSocket() {
     waitingSocket = new WebSocket(url);
 
     waitingSocket.onopen = function () {
+<<<<<<< HEAD
         trySendJoin();
+=======
+        envoyerPseudoSalle();
+>>>>>>> v1seb
     };
 
     waitingSocket.onmessage = function (event) {
         const data = JSON.parse(event.data);
         if (data.type === "state") {
+<<<<<<< HEAD
             renderWaitingState(data);
+=======
+            rendreEtatAttente(data);
+>>>>>>> v1seb
             if (data.roundActive) {
                 window.location.href = "/PetitBac/play?room=" + encodeURIComponent(code);
             }
@@ -59,6 +84,7 @@ function connectWaitingSocket() {
     };
 
     waitingSocket.onclose = function () {
+<<<<<<< HEAD
         console.log("PetitBac: socket salle d'attente ferme");
     };
 
@@ -76,6 +102,25 @@ function trySendJoin() {
 }
 
 function renderWaitingState(state) {
+=======
+        console.log("PetitBac: socket attente fermee");
+    };
+
+    waitingSocket.onerror = function (err) {
+        console.error("PetitBac: erreur socket attente", err);
+    };
+}
+
+function envoyerPseudoSalle() {
+    if (!waitingPseudo || pseudoEnvoye || !waitingSocket || waitingSocket.readyState !== WebSocket.OPEN) {
+        return;
+    }
+    waitingSocket.send(JSON.stringify({type: "join", name: waitingPseudo}));
+    pseudoEnvoye = true;
+}
+
+function rendreEtatAttente(state) {
+>>>>>>> v1seb
     const tbody = document.getElementById("waiting-scores");
     if (tbody) {
         tbody.innerHTML = "";
@@ -87,7 +132,11 @@ function renderWaitingState(state) {
             const total = player.totalScore || 0;
             tdScore.textContent = total + " pt" + (total > 1 ? "s" : "");
             const tdStatus = document.createElement("td");
+<<<<<<< HEAD
             tdStatus.textContent = player.active ? "En jeu" : (player.ready ? "Prêt" : "En attente");
+=======
+            tdStatus.textContent = player.active ? "En jeu" : (player.ready ? "Pret" : "En attente");
+>>>>>>> v1seb
             tr.appendChild(tdName);
             tr.appendChild(tdScore);
             tr.appendChild(tdStatus);
@@ -100,6 +149,7 @@ function renderWaitingState(state) {
     }
 }
 
+<<<<<<< HEAD
 async function loadPersistedScores() {
     const code = getRoomCode();
     if (!code) {
@@ -137,6 +187,8 @@ async function loadPersistedScores() {
     }
 }
 
+=======
+>>>>>>> v1seb
 function setupStartButton() {
     const button = document.getElementById("btn-start");
     if (!button) {
@@ -176,7 +228,11 @@ function setupStartButton() {
 document.addEventListener("DOMContentLoaded", function () {
     getRoomCode();
     fetchUserPseudo();
+<<<<<<< HEAD
     loadPersistedScores();
     connectWaitingSocket();
+=======
+    connecterSalle();
+>>>>>>> v1seb
     setupStartButton();
 });

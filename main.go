@@ -21,7 +21,7 @@ func main() {
 	http.HandleFunc("/logout", pageLogout)
 	http.HandleFunc("/api/user", apiUserInfo)
 
-	if err := petitbac.RegisterRoutes(requireAuth); err != nil {
+	if err := petitbac.RegisterRoutes(requireAuth, petitBacUserResolver); err != nil {
 		log.Fatal(err)
 	}
 	blindtest.RegisterRoutes(requireAuth)
@@ -44,4 +44,12 @@ func pageAccueil(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	tmpl.Execute(w, nil)
+}
+
+func petitBacUserResolver(r *http.Request) (*petitbac.UserInfo, error) {
+	user, err := getUserFromSession(r)
+	if err != nil {
+		return nil, err
+	}
+	return &petitbac.UserInfo{ID: user.ID, Pseudo: user.Pseudo}, nil
 }

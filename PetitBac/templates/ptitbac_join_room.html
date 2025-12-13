@@ -10,12 +10,17 @@
     <div>
         <p class="pb-tagline">Option 2</p>
         <h1 class="pb-title">Rejoins un salon existant</h1>
+<<<<<<< HEAD
         <p class="pb-subtitle">Un hôte a déjà fait les réglages. Tu n'as plus qu'à entrer son code.</p>
+=======
+        <p class="pb-subtitle">Entre le code partage par ton ami et retrouve la salle d'attente.</p>
+>>>>>>> v1seb
     </div>
     <a class="btn-link" href="/PetitBac">Changer d'option</a>
 </header>
 
 <main class="pb-container two-columns">
+<<<<<<< HEAD
     <form id="joinRoomForm" class="pb-card join-form">
         <h2>Entrer un code de salon</h2>
         <p>Demande le code à l'hôte et entre-le ci-dessous.</p>
@@ -42,5 +47,27 @@
     </section>
 </main>
 <script src="/Pstatic/pbFlow.js"></script>
+=======
+    <form method="post" action="/PetitBac/join" class="pb-card join-form" id="joinRoomForm">
+        <h2>Entrer un code de salon</h2>
+        {{if .Error}}<p class="form-error">{{.Error}}</p>{{end}}
+        <label for="room">Code</label>
+        <input type="text" id="room" name="room" placeholder="EX : KAWA" maxlength="5" value="{{.Code}}">
+        <button type="submit" class="btn-option">Rejoindre</button>
+        <small>Une fois valide, tu arriveras dans la salle d'attente partagee.</small>
+    </form>
+
+    <section class="pb-card ready-room">
+        <h2>Comment ca marche ?</h2>
+        <p>Ton hote configure le salon puis partage le code avec toi. Tous les joueurs connectes apparaissent, et l'hote peut lancer la partie lorsque tout le monde est pret.</p>
+        <ul class="room-details">
+            <li>Jusqu'a 5 joueurs simultanes</li>
+            <li>Categories communes a tous</li>
+            <li>Scores visibles en direct</li>
+        </ul>
+        <p class="room-note">Besoin d'un exemple ? Cree un salon via l'option 1 puis reviens ici avec le code.</p>
+    </section>
+</main>
+>>>>>>> v1seb
 </body>
 </html>

@@ -2,26 +2,41 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+<<<<<<< HEAD
     <title>Petit Bac - Choisis tes catégories</title>
+=======
+    <title>Petit Bac - Categories</title>
+>>>>>>> v1seb
     <link rel="stylesheet" href="../Pstatic/styles.css">
 </head>
 <body class="pb-shell">
 <header class="pb-header">
     <div>
+<<<<<<< HEAD
         <p class="pb-tagline">Création de salon</p>
         <h1 class="pb-title">Étape 1 · Catégories</h1>
         <p class="pb-subtitle">Sélectionne les thèmes qui seront proposés pendant la partie.</p>
+=======
+        <p class="pb-tagline">Creation de salon</p>
+        <h1 class="pb-title">Etape 1 - Choisis tes categories</h1>
+        <p class="pb-subtitle">Coche au moins une categorie avant de continuer.</p>
+>>>>>>> v1seb
     </div>
     <a class="btn-link" href="/PetitBac">Changer d'option</a>
 </header>
 
 <main class="pb-container steps">
     <div class="pb-steps">
+<<<<<<< HEAD
         <span class="step active">1. Catégories</span>
+=======
+        <span class="step active">1. Categories</span>
+>>>>>>> v1seb
         <span class="step">2. Temps</span>
         <span class="step">3. Lancement</span>
     </div>
 
+<<<<<<< HEAD
     <form id="categoriesForm" action="/PetitBac/create/time" method="get" class="pb-card">
         <h2>Choisis au moins 6 catégories</h2>
         <p>Les catégories sélectionnées seront proposées à tous les joueurs pendant chaque manche.</p>
@@ -61,21 +76,74 @@
             </label>
             <label class="category-pill">
                 <input type="checkbox" name="categories" value="Inventions">
+=======
+    <form method="post" action="/PetitBac/create/categories" class="pb-card" id="categoriesForm">
+        <h2>Selectionne tes themes preferes</h2>
+        {{if .Error}}<p class="form-error">{{.Error}}</p>{{end}}
+        <div class="category-grid">
+            {{/* Each checkbox uses the Selected map to stay active */}}
+            <label class="category-pill">
+                <input type="checkbox" name="categories" value="Animaux" {{if index .Selected "Animaux"}}checked{{end}}>
+                <span>Animaux</span>
+            </label>
+            <label class="category-pill">
+                <input type="checkbox" name="categories" value="Villes" {{if index .Selected "Villes"}}checked{{end}}>
+                <span>Villes</span>
+            </label>
+            <label class="category-pill">
+                <input type="checkbox" name="categories" value="Personnages celebres" {{if index .Selected "Personnages celebres"}}checked{{end}}>
+                <span>Personnages celebres</span>
+            </label>
+            <label class="category-pill">
+                <input type="checkbox" name="categories" value="Objets" {{if index .Selected "Objets"}}checked{{end}}>
+                <span>Objets</span>
+            </label>
+            <label class="category-pill">
+                <input type="checkbox" name="categories" value="Musiques" {{if index .Selected "Musiques"}}checked{{end}}>
+                <span>Musiques / Artistes</span>
+            </label>
+            <label class="category-pill">
+                <input type="checkbox" name="categories" value="Nourriture" {{if index .Selected "Nourriture"}}checked{{end}}>
+                <span>Nourriture</span>
+            </label>
+            <label class="category-pill">
+                <input type="checkbox" name="categories" value="Series" {{if index .Selected "Series"}}checked{{end}}>
+                <span>Series</span>
+            </label>
+            <label class="category-pill">
+                <input type="checkbox" name="categories" value="Sport" {{if index .Selected "Sport"}}checked{{end}}>
+                <span>Sport</span>
+            </label>
+            <label class="category-pill">
+                <input type="checkbox" name="categories" value="Inventions" {{if index .Selected "Inventions"}}checked{{end}}>
+>>>>>>> v1seb
                 <span>Inventions</span>
             </label>
         </div>
 
         <div class="category-custom">
+<<<<<<< HEAD
             <label for="custom-category">Ajoute ta catégorie personnalisée</label>
             <input type="text" id="custom-category" name="custom" placeholder="Ex : jeux vidéo, cocktail, etc.">
+=======
+            <label for="custom-category">Ajoute ta categorie personnalisee</label>
+            <input type="text" id="custom-category" name="custom" placeholder="Ex : jeux video, cocktails..." value="{{.Custom}}">
+>>>>>>> v1seb
         </div>
 
         <div class="form-actions">
             <a href="/PetitBac" class="btn-option secondary">Retour</a>
+<<<<<<< HEAD
             <button type="submit" class="btn-option">Valider mes catégories</button>
         </div>
     </form>
 </main>
 <script src="/Pstatic/pbFlow.js"></script>
+=======
+            <button type="submit" class="btn-option">Etape suivante</button>
+        </div>
+    </form>
+</main>
+>>>>>>> v1seb
 </body>
 </html>

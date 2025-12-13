@@ -40,7 +40,10 @@ function connecterWebSocket() {
     socket = new WebSocket(url);
 
     socket.onopen = function () {
+<<<<<<< HEAD
         console.log("WebSocket connecte");
+=======
+>>>>>>> v1seb
         envoyerPseudoAuto();
     };
 
@@ -52,6 +55,7 @@ function connecterWebSocket() {
         }
         if (data.type === "identity") {
             identifiantClient = data.id;
+            envoyerPseudoAuto();
         }
     };
 
@@ -162,7 +166,7 @@ function mettreAJourEtat(etat) {
                 msg.textContent = "";
             }
         } else if (etat.waitingRestart) {
-            msg.textContent = "Manche terminee. Vote \"Oui, je rejoue\" (plus d'un tiers des joueurs requis).";
+            msg.textContent = "Manche terminee. Vote \"Oui, je rejoue\" (plus d'un tiers requis).";
         } else {
             msg.textContent = "Manche terminee ! (un joueur a tout rempli ou le temps est ecoule)";
         }
@@ -208,12 +212,15 @@ function mettreAJourEtat(etat) {
 async function loadUserInfo() {
     try {
         const response = await fetch("/api/user");
+        if (!response.ok) {
+            return;
+        }
         const data = await response.json();
 
         if (data.authenticated) {
             const userDisplay = document.getElementById("userDisplay");
             if (userDisplay) {
-                userDisplay.textContent = `Salut, ${data.pseudo} ??`;
+                userDisplay.textContent = `Salut, ${data.pseudo} !!`;
             }
             renseignerPseudoAuto(data.pseudo);
         }
