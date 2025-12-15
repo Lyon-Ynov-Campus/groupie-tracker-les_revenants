@@ -24,7 +24,7 @@ type dbPlayer struct {
 
 func initPetitBacStore() error {
 	dbOnce.Do(func() {
-		pbDB, dbErr = sql.Open("sqlite", "./blindtest.db")
+		pbDB, dbErr = sql.Open("sqlite", "./main.db")
 		if dbErr != nil {
 			return
 		}
