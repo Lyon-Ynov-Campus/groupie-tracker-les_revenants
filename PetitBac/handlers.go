@@ -30,7 +30,7 @@ type joinPageData struct {
 }
 
 type waitingPageData struct {
-	donneesPage
+	PageData
 	JoueursAttente []dbPlayer
 }
 
@@ -102,13 +102,13 @@ func pageCreateTime(w http.ResponseWriter, r *http.Request) {
 		}
 		duration := clampTemps(parseIntOrDefault(r.FormValue("duration"), 60))
 		rounds := clampRounds(parseIntOrDefault(r.FormValue("rounds"), 5))
-		reg := reglageJeu{
+		reg := GameConfig{
 			Categories: cats,
 			Temps:      duration,
 			Manches:    rounds,
 		}
-		salon := createConfiguredSalon(reg, currentUserPseudo(r))
-		http.Redirect(w, r, "/PetitBac/wait?room="+url.QueryEscape(salon.code), http.StatusSeeOther)
+		room := createConfiguredRoom(reg, currentUserPseudo(r))
+		http.Redirect(w, r, "/PetitBac/wait?room="+url.QueryEscape(room.code), http.StatusSeeOther)
 	default:
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 	}
@@ -117,19 +117,19 @@ func pageCreateTime(w http.ResponseWriter, r *http.Request) {
 func pageJoinSalon(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		data := joinPageData{Code: normalizeSalonCode(r.URL.Query().Get("code"))}
+		data := joinPageData{Code: normalizeRoomCode(r.URL.Query().Get("code"))}
 		renderStaticPage(w, tplJoinRoom, data)
 	case http.MethodPost:
 		if err := r.ParseForm(); err != nil {
 			http.Error(w, "formulaire invalide", http.StatusBadRequest)
 			return
 		}
-		code := normalizeSalonCode(r.FormValue("room"))
+		code := normalizeRoomCode(r.FormValue("room"))
 		if code == "" {
 			renderStaticPage(w, tplJoinRoom, joinPageData{Error: "Merci de saisir un code valide."})
 			return
 		}
-		s, err := salons.getSalonForJoin(code)
+		s, err := getRoomForJoin(code)
 		if err != nil {
 			renderStaticPage(w, tplJoinRoom, joinPageData{Error: err.Error(), Code: code})
 			return
@@ -145,7 +145,7 @@ func pageJoinSalon(w http.ResponseWriter, r *http.Request) {
 }
 
 func pageWaitingRoom(w http.ResponseWriter, r *http.Request) {
-	s, err := salonFromRequest(r)
+	s, err := roomFromRequest(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -155,7 +155,7 @@ func pageWaitingRoom(w http.ResponseWriter, r *http.Request) {
 		log.Println("PetitBac: impossible de charger les joueurs:", err)
 	}
 	data := waitingPageData{
-		donneesPage:    s.templateData(),
+		PageData:       s.templateData(),
 		JoueursAttente: players,
 	}
 	renderStaticPage(w, tplWaiting, data)
@@ -169,13 +169,13 @@ func renderStaticPage(w http.ResponseWriter, tpl *template.Template, data any) {
 }
 
 func pageJeu(w http.ResponseWriter, r *http.Request) {
-	s, err := salonFromRequest(r)
+	room, err := roomFromRequest(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
-	renderStaticPage(w, tplJeu, s.templateData())
+	renderStaticPage(w, tplJeu, room.templateData())
 }
 
 func configJeu(w http.ResponseWriter, r *http.Request) {
@@ -184,27 +184,27 @@ func configJeu(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s, err := salonFromRequest(r)
+	room, err := roomFromRequest(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
-	var reg reglageJeu
+	var reg GameConfig
 	if err := json.NewDecoder(r.Body).Decode(&reg); err != nil {
 		http.Error(w, "invalid config", http.StatusBadRequest)
 		return
 	}
 
-	s.applyConfig(reg)
-	s.demarrerManche(false)
+	room.applyConfig(reg)
+	room.demarrerManche(false)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
 
 func socketJeu(w http.ResponseWriter, r *http.Request) {
-	s, err := salonFromRequest(r)
+	room, err := roomFromRequest(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -215,25 +215,25 @@ func socketJeu(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	joueur, joinErr := s.addPlayer(conn)
+	joueur, joinErr := room.addPlayer(conn)
 	if joinErr != nil {
 		conn.WriteJSON(map[string]string{"type": "error", "message": joinErr.Error()})
 		conn.Close()
 		return
 	}
 
-	conn.WriteJSON(map[string]string{"type": "identity", "id": joueur.ID, "room": s.code})
-	s.envoyerEtat()
-	go s.boucleWS(conn)
+	conn.WriteJSON(map[string]string{"type": "identity", "id": joueur.ID, "room": room.code})
+	room.envoyerEtat()
+	go room.boucleWS(conn)
 }
 
-func salonFromRequest(r *http.Request) (*salon, error) {
-	code := normalizeSalonCode(r.URL.Query().Get("room"))
+func roomFromRequest(r *http.Request) (*Room, error) {
+	code := normalizeRoomCode(r.URL.Query().Get("room"))
 	if code == "" {
-		return salons.defaultSalon(), nil
+		return defaultRoom(), nil
 	}
-	if s, ok := salons.getSalon(code); ok {
-		return s, nil
+	if room, ok := getRoom(code); ok {
+		return room, nil
 	}
 	return nil, fmt.Errorf("salon %s introuvable", code)
 }

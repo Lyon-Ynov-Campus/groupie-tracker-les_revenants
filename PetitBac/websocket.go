@@ -6,82 +6,83 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func (s *salon) boucleWS(conn *websocket.Conn) {
+func (r *Room) boucleWS(conn *websocket.Conn) {
 	defer func() {
-		s.removePlayer(conn)
+		r.removePlayer(conn)
 		conn.Close()
-		s.envoyerEtat()
+		r.envoyerEtat()
 	}()
 
 	for {
-		var msg messageJeu
+		var msg Message
 		if err := conn.ReadJSON(&msg); err != nil {
 			return
 		}
 
-		s.mu.Lock()
-		j, ok := s.joueurs[conn]
+		r.mu.Lock()
+		playerID, ok := r.connections[conn]
 		if !ok {
-			s.mu.Unlock()
+			r.mu.Unlock()
 			return
 		}
+		player := r.players[playerID]
 		switch msg.Type {
 		case "join":
 			if n := strings.TrimSpace(msg.Nom); n != "" {
-				j.Nom = n
-				recordPlayerEntry(s.code, j.Nom)
+				player.Nom = n
+				recordPlayerEntry(r.code, player.Nom)
 			}
 		case "answers":
-			if s.mancheEnCours && j.Actif {
+			if r.mancheEnCours && player.Actif {
 				complet := true
-				for _, cat := range s.reglages.Categories {
+				for _, cat := range r.reglages.Categories {
 					val := msg.Reponses[cat]
-					j.Reponses[cat] = val
+					player.Reponses[cat] = val
 					if strings.TrimSpace(val) == "" {
 						complet = false
 					}
 				}
 				if complet {
-					s.mu.Unlock()
-					s.finMancheRemplie()
+					r.mu.Unlock()
+					r.finMancheRemplie()
 					continue
 				}
 			}
 		case "ready":
-			if s.attenteVotes && !j.Pret {
-				j.Pret = true
-				s.mu.Unlock()
-				if s.verifieVotes() {
+			if r.attenteVotes && !player.Pret {
+				player.Pret = true
+				r.mu.Unlock()
+				if r.verifieVotes() {
 					continue
 				}
-				s.envoyerEtat()
+				r.envoyerEtat()
 				continue
 			}
 		}
-		s.mu.Unlock()
-		s.envoyerEtat()
+		r.mu.Unlock()
+		r.envoyerEtat()
 	}
 }
 
-func (s *salon) envoyerEtat() {
-	s.mu.Lock()
-	etat := paquetEtat{
+func (r *Room) envoyerEtat() {
+	r.mu.RLock()
+	etat := GameState{
 		Type:           "state",
-		Lettre:         string(s.lettreActu),
-		Categories:     append([]string(nil), s.reglages.Categories...),
-		Secondes:       s.tempsRest,
-		MancheActive:   s.mancheEnCours,
-		Attente:        s.attenteVotes,
-		NumeroManche:   s.nbManches,
-		LimiteManches:  s.reglages.Manches,
-		JeuTermine:     s.termine,
-		TempsParManche: s.reglages.Temps,
+		Lettre:         string(r.lettreActu),
+		Categories:     append([]string(nil), r.reglages.Categories...),
+		Secondes:       r.tempsRest,
+		MancheActive:   r.mancheEnCours,
+		Attente:        r.attenteVotes,
+		NumeroManche:   r.nbManches,
+		LimiteManches:  r.reglages.Manches,
+		JeuTermine:     r.termine,
+		TempsParManche: r.reglages.Temps,
 	}
-	jListe := make([]joueurDonnees, 0, len(s.joueurs))
-	dest := make([]*websocket.Conn, 0, len(s.joueurs))
-	for c, j := range s.joueurs {
-		dest = append(dest, c)
-		jListe = append(jListe, *j)
+	liste := make([]Player, 0, len(r.players))
+	dest := make([]*websocket.Conn, 0, len(r.players))
+	for _, j := range r.players {
+		liste = append(liste, *j)
+		dest = append(dest, j.Conn)
 		if j.Actif {
 			etat.Actifs++
 		}
@@ -89,13 +90,15 @@ func (s *salon) envoyerEtat() {
 			etat.CompteurPrets++
 		}
 	}
-	etat.Joueurs = jListe
-	etat.CompteurTotal = len(s.joueurs)
-	s.mu.Unlock()
+	etat.Joueurs = liste
+	etat.CompteurTotal = len(r.players)
+	r.mu.RUnlock()
 
-	persistPlayersSnapshot(s.code, jListe)
+	persistPlayersSnapshot(r.code, liste)
 
 	for _, c := range dest {
-		c.WriteJSON(etat)
+		if c != nil {
+			c.WriteJSON(etat)
+		}
 	}
 }

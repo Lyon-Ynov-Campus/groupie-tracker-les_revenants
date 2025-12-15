@@ -2,7 +2,6 @@ package petitbac
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"math/rand"
 	"net/http"
@@ -11,23 +10,14 @@ import (
 )
 
 const (
-	defaultSalonCode = "CLASSIC"
-	salonCodeLength  = 5
-	maxSalonPlayers  = 5
+	defaultRoomCode = "CLASSIC"
+	roomCodeLength  = 6
+	maxSalonPlayers = 5
 )
-
-var salons = newSalonManager()
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
-}
-
-func newSalonManager() *salonManager {
-	m := &salonManager{
-		salons: make(map[string]*salon),
-	}
-	m.salons[defaultSalonCode] = newSalon(defaultSalonCode)
-	return m
+	ensureDefaultRoom()
 }
 
 func registerSalonHandlers(authMiddleware func(http.HandlerFunc) http.HandlerFunc) {
@@ -50,14 +40,14 @@ func handleSalonCreate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid payload", http.StatusBadRequest)
 		return
 	}
-	reg := reglageJeu{
+	reg := GameConfig{
 		Categories: sanitizeCategories(payload.Categories),
 		Temps:      clampTemps(payload.Temps),
 		Manches:    clampRounds(payload.Manches),
 	}
 
-	s := createConfiguredSalon(reg, payload.Host)
-	respondJSON(w, map[string]string{"code": s.code})
+	room := createConfiguredRoom(reg, payload.Host)
+	respondJSON(w, map[string]string{"code": room.code})
 }
 
 func handleSalonJoin(w http.ResponseWriter, r *http.Request) {
@@ -74,16 +64,16 @@ func handleSalonJoin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s, err := salons.getSalonForJoin(payload.Code)
+	room, err := getRoomForJoin(payload.Code)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	if !s.hasRoom() {
+	if !room.hasRoom() {
 		http.Error(w, "salon plein (5 joueurs maximum)", http.StatusConflict)
 		return
 	}
-	respondJSON(w, map[string]string{"status": "ok", "code": s.code})
+	respondJSON(w, map[string]string{"status": "ok", "code": room.code})
 }
 
 func respondJSON(w http.ResponseWriter, data interface{}) {
@@ -96,7 +86,7 @@ func handleRoomPlayers(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	code := normalizeSalonCode(r.URL.Query().Get("room"))
+	code := normalizeRoomCode(r.URL.Query().Get("room"))
 	if code == "" {
 		http.Error(w, "code manquant", http.StatusBadRequest)
 		return
@@ -122,89 +112,90 @@ func handleStartGame(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid payload", http.StatusBadRequest)
 		return
 	}
-	s, err := salons.getSalonForJoin(payload.Code)
+	room, err := getRoomForJoin(payload.Code)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	if payload.Host != "" && !isRoomHost(s.code, payload.Host) {
+	if payload.Host != "" && !isRoomHost(room.code, payload.Host) {
 		http.Error(w, "action reservee a l'hote", http.StatusForbidden)
 		return
 	}
-	s.demarrerManche(false)
+	room.demarrerManche(false)
 	respondJSON(w, map[string]string{"status": "started"})
 }
 
-func (m *salonManager) createSalon() *salon {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	code := m.generateCodeLocked()
-	s := newSalon(code)
-	m.salons[code] = s
-	return s
-}
-
-func (m *salonManager) defaultSalon() *salon {
-	m.mu.RLock()
-	s, ok := m.salons[defaultSalonCode]
-	m.mu.RUnlock()
-	if ok {
-		return s
-	}
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	if existing, ok := m.salons[defaultSalonCode]; ok {
+func ensureDefaultRoom() *Room {
+	roomsMu.Lock()
+	defer roomsMu.Unlock()
+	if existing, ok := rooms[defaultRoomCode]; ok {
 		return existing
 	}
-	s = newSalon(defaultSalonCode)
-	m.salons[defaultSalonCode] = s
-	return s
+	room := newRoom(defaultRoomCode)
+	rooms[defaultRoomCode] = room
+	return room
 }
 
-func (m *salonManager) getSalon(code string) (*salon, bool) {
-	code = normalizeSalonCode(code)
-	if code == "" {
-		return m.defaultSalon(), true
+func defaultRoom() *Room {
+	roomsMu.RLock()
+	room, ok := rooms[defaultRoomCode]
+	roomsMu.RUnlock()
+	if ok {
+		return room
 	}
-	m.mu.RLock()
-	s, ok := m.salons[code]
-	m.mu.RUnlock()
-	return s, ok
+	return ensureDefaultRoom()
 }
 
-func (m *salonManager) getSalonForJoin(code string) (*salon, error) {
-	code = normalizeSalonCode(code)
+func getRoom(code string) (*Room, bool) {
+	code = normalizeRoomCode(code)
 	if code == "" {
-		return nil, errors.New("code requis")
+		return defaultRoom(), true
 	}
-	m.mu.RLock()
-	s, ok := m.salons[code]
-	m.mu.RUnlock()
+	roomsMu.RLock()
+	room, ok := rooms[code]
+	roomsMu.RUnlock()
+	return room, ok
+}
+
+func getRoomForJoin(code string) (*Room, error) {
+	code = normalizeRoomCode(code)
+	if code == "" {
+		return nil, fmt.Errorf("code requis")
+	}
+	roomsMu.RLock()
+	room, ok := rooms[code]
+	roomsMu.RUnlock()
 	if !ok {
 		return nil, fmt.Errorf("salon %s introuvable", code)
 	}
-	return s, nil
+	return room, nil
 }
 
-func (m *salonManager) generateCodeLocked() string {
-	const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+func createConfiguredRoom(reg GameConfig, host string) *Room {
+	room := newRoom(generateRoomCode())
+	room.applyConfig(reg)
+	roomsMu.Lock()
+	rooms[room.code] = room
+	roomsMu.Unlock()
+	persistRoomConfiguration(room.code, reg, host)
+	return room
+}
+
+func generateRoomCode() string {
+	const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	for {
 		builder := strings.Builder{}
-		for i := 0; i < salonCodeLength; i++ {
+		for i := 0; i < roomCodeLength; i++ {
 			builder.WriteByte(letters[rand.Intn(len(letters))])
 		}
 		code := builder.String()
-		if _, exists := m.salons[code]; !exists {
+		roomsMu.RLock()
+		_, exists := rooms[code]
+		roomsMu.RUnlock()
+		if !exists {
 			return code
 		}
 	}
-}
-
-func createConfiguredSalon(reg reglageJeu, host string) *salon {
-	s := salons.createSalon()
-	s.applyConfig(reg)
-	persistRoomConfiguration(s.code, reg, host)
-	return s
 }
 
 func sanitizeCategories(cats []string) []string {

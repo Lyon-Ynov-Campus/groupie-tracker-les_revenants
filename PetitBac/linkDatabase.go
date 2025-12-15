@@ -62,7 +62,7 @@ func createPetitBacTables(db *sql.DB) error {
 	return nil
 }
 
-func persistRoomConfiguration(code string, reg reglageJeu, host string) {
+func persistRoomConfiguration(code string, reg GameConfig, host string) {
 	if pbDB == nil {
 		return
 	}
@@ -102,22 +102,16 @@ func recordPlayerEntry(roomCode, pseudo string) {
 	}
 }
 
-func persistPlayersSnapshot(roomCode string, joueurs []joueurDonnees) {
+func persistPlayersSnapshot(roomCode string, joueurs []Player) {
 	if pbDB == nil {
 		return
 	}
-	tx, err := pbDB.Begin()
-	if err != nil {
-		log.Println("PetitBac: impossible de demarrer la transaction de sauvegarde:", err)
-		return
-	}
-	stmt, err := tx.Prepare(`INSERT INTO petitbac_players(room_code, pseudo, total_score, updated_at)
+	stmt, err := pbDB.Prepare(`INSERT INTO petitbac_players(room_code, pseudo, total_score, updated_at)
 		VALUES(?, ?, ?, CURRENT_TIMESTAMP)
 		ON CONFLICT(room_code, pseudo) DO UPDATE SET
 			total_score=excluded.total_score,
 			updated_at=CURRENT_TIMESTAMP;`)
 	if err != nil {
-		tx.Rollback()
 		log.Println("PetitBac: prepare snapshot:", err)
 		return
 	}
@@ -130,9 +124,6 @@ func persistPlayersSnapshot(roomCode string, joueurs []joueurDonnees) {
 		if _, err := stmt.Exec(roomCode, name, j.Total); err != nil {
 			log.Println("PetitBac: snapshot joueur:", err)
 		}
-	}
-	if err := tx.Commit(); err != nil {
-		log.Println("PetitBac: commit snapshot:", err)
 	}
 }
 

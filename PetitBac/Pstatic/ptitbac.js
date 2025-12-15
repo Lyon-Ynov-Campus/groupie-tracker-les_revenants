@@ -33,7 +33,7 @@ function envoyerPseudoAuto() {
 
 function connecterWebSocket() {
     const proto = (window.location.protocol === "https:") ? "wss://" : "ws://";
-    let url = proto + window.location.host + "/ws";
+    let url = proto + window.location.host + "/PetitBac/ws";
     if (salonCode) {
         url += "?room=" + encodeURIComponent(salonCode);
     }
@@ -285,7 +285,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const categoriesBrutes = document.getElementById("categories-input").value.split(/\r?\n/);
             const categories = categoriesBrutes.map(c => c.trim()).filter(c => c.length > 0);
 
-            let configURL = "/config";
+            let configURL = "/PetitBac/config";
             if (salonCode) {
                 configURL += "?room=" + encodeURIComponent(salonCode);
             }

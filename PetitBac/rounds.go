@@ -2,50 +2,50 @@ package petitbac
 
 import "time"
 
-func (s *salon) templateData() donneesPage {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return donneesPage{
-		Lettre:          string(s.lettreActu),
-		Categories:      append([]string(nil), s.reglages.Categories...),
-		TempsParManche:  s.reglages.Temps,
-		NombreDeManches: s.reglages.Manches,
-		SalonCode:       s.code,
+func (r *Room) templateData() PageData {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	return PageData{
+		Lettre:          string(r.lettreActu),
+		Categories:      append([]string(nil), r.reglages.Categories...),
+		TempsParManche:  r.reglages.Temps,
+		NombreDeManches: r.reglages.Manches,
+		SalonCode:       r.code,
 	}
 }
 
-func (s *salon) applyConfig(reg reglageJeu) {
-	s.mu.Lock()
+func (r *Room) applyConfig(reg GameConfig) {
+	r.mu.Lock()
 	if len(reg.Categories) > 0 {
-		s.reglages.Categories = reg.Categories
+		r.reglages.Categories = reg.Categories
 	}
 	if reg.Temps >= 15 {
-		s.reglages.Temps = reg.Temps
+		r.reglages.Temps = reg.Temps
 	}
 	if reg.Manches > 0 {
-		s.reglages.Manches = reg.Manches
+		r.reglages.Manches = reg.Manches
 	}
-	s.mancheEnCours, s.attenteVotes, s.termine = false, false, false
-	s.nbManches, s.tempsRest = 0, 0
-	s.lettreActu = lettreAleatoire()
-	for _, j := range s.joueurs {
+	r.mancheEnCours, r.attenteVotes, r.termine = false, false, false
+	r.nbManches, r.tempsRest = 0, 0
+	r.lettreActu = lettreAleatoire()
+	for _, j := range r.players {
 		j.Score, j.Total, j.Actif, j.Pret = 0, 0, false, false
 		j.Reponses = make(map[string]string)
 	}
-	s.mu.Unlock()
+	r.mu.Unlock()
 }
 
-func (s *salon) demarrerManche(selection bool) {
-	s.mu.Lock()
-	if s.termine || (s.reglages.Manches > 0 && s.nbManches >= s.reglages.Manches) {
-		s.finPartieLocked()
-		s.mu.Unlock()
-		s.envoyerEtat()
+func (r *Room) demarrerManche(selection bool) {
+	r.mu.Lock()
+	if r.termine || (r.reglages.Manches > 0 && r.nbManches >= r.reglages.Manches) {
+		r.finPartieLocked()
+		r.mu.Unlock()
+		r.envoyerEtat()
 		return
 	}
 
 	actifs := 0
-	for _, j := range s.joueurs {
+	for _, j := range r.players {
 		j.Score = 0
 		j.Reponses = make(map[string]string)
 		j.Actif = !selection || j.Pret
@@ -56,106 +56,106 @@ func (s *salon) demarrerManche(selection bool) {
 	}
 
 	if selection && actifs == 0 {
-		s.attenteVotes = true
-		s.tempsRest = 0
-		s.mu.Unlock()
-		s.envoyerEtat()
+		r.attenteVotes = true
+		r.tempsRest = 0
+		r.mu.Unlock()
+		r.envoyerEtat()
 		return
 	}
 
-	s.nbManches++
-	if s.reglages.Temps <= 0 {
-		s.reglages.Temps = 90
+	r.nbManches++
+	if r.reglages.Temps <= 0 {
+		r.reglages.Temps = 90
 	}
-	s.lettreActu = lettreAleatoire()
-	s.tempsRest = s.reglages.Temps
-	s.mancheEnCours, s.attenteVotes, s.termine = true, false, false
-	s.mu.Unlock()
+	r.lettreActu = lettreAleatoire()
+	r.tempsRest = r.reglages.Temps
+	r.mancheEnCours, r.attenteVotes, r.termine = true, false, false
+	r.mu.Unlock()
 
-	go s.compteRebours()
-	s.envoyerEtat()
+	go r.compteRebours()
+	r.envoyerEtat()
 }
 
-func (s *salon) compteRebours() {
+func (r *Room) compteRebours() {
 	t := time.NewTicker(time.Second)
 	defer t.Stop()
 	for range t.C {
-		s.mu.Lock()
-		if !s.mancheEnCours {
-			s.mu.Unlock()
+		r.mu.Lock()
+		if !r.mancheEnCours {
+			r.mu.Unlock()
 			return
 		}
-		if s.tempsRest > 0 {
-			s.tempsRest--
+		if r.tempsRest > 0 {
+			r.tempsRest--
 		}
-		if s.tempsRest == 0 {
-			s.mancheEnCours = false
-			s.mu.Unlock()
-			s.scoresFin()
-			s.modeAttente()
-			s.envoyerEtat()
+		if r.tempsRest == 0 {
+			r.mancheEnCours = false
+			r.mu.Unlock()
+			r.scoresFin()
+			r.modeAttente()
+			r.envoyerEtat()
 			return
 		}
-		s.mu.Unlock()
-		s.envoyerEtat()
+		r.mu.Unlock()
+		r.envoyerEtat()
 	}
 }
 
-func (s *salon) finMancheRemplie() {
-	s.mu.Lock()
-	if !s.mancheEnCours {
-		s.mu.Unlock()
+func (r *Room) finMancheRemplie() {
+	r.mu.Lock()
+	if !r.mancheEnCours {
+		r.mu.Unlock()
 		return
 	}
-	s.mancheEnCours = false
-	s.tempsRest = 0
-	s.mu.Unlock()
-	s.scoresFin()
-	s.modeAttente()
-	s.envoyerEtat()
+	r.mancheEnCours = false
+	r.tempsRest = 0
+	r.mu.Unlock()
+	r.scoresFin()
+	r.modeAttente()
+	r.envoyerEtat()
 }
 
-func (s *salon) modeAttente() {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if s.reglages.Manches > 0 && s.nbManches >= s.reglages.Manches {
-		s.finPartieLocked()
+func (r *Room) modeAttente() {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if r.reglages.Manches > 0 && r.nbManches >= r.reglages.Manches {
+		r.finPartieLocked()
 		return
 	}
-	s.attenteVotes = true
-	s.tempsRest = 0
-	for _, j := range s.joueurs {
+	r.attenteVotes = true
+	r.tempsRest = 0
+	for _, j := range r.players {
 		j.Actif = false
 		j.Pret = false
 	}
 }
 
-func (s *salon) verifieVotes() bool {
-	s.mu.Lock()
-	if !s.attenteVotes || len(s.joueurs) == 0 || s.termine {
-		s.mu.Unlock()
+func (r *Room) verifieVotes() bool {
+	r.mu.Lock()
+	if !r.attenteVotes || len(r.players) == 0 || r.termine {
+		r.mu.Unlock()
 		return false
 	}
 	prets := 0
-	for _, j := range s.joueurs {
+	for _, j := range r.players {
 		if j.Pret {
 			prets++
 		}
 	}
-	total := len(s.joueurs)
-	s.mu.Unlock()
+	total := len(r.players)
+	r.mu.Unlock()
 
 	if prets > 0 && float64(prets) >= float64(total)*0.66 {
-		s.demarrerManche(true)
+		r.demarrerManche(true)
 		return true
 	}
 	return false
 }
 
-func (s *salon) finPartieLocked() {
-	s.mancheEnCours, s.attenteVotes, s.termine = false, false, true
-	s.tempsRest = 0
-	for _, j := range s.joueurs {
+func (r *Room) finPartieLocked() {
+	r.mancheEnCours, r.attenteVotes, r.termine = false, false, true
+	r.tempsRest = 0
+	for _, j := range r.players {
 		j.Actif, j.Pret = false, false
 	}
 }

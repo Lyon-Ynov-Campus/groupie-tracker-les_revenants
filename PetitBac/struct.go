@@ -6,7 +6,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type joueurDonnees struct {
+type Player struct {
 	ID       string            `json:"id"`
 	Nom      string            `json:"name"`
 	Score    int               `json:"score"`
@@ -14,32 +14,33 @@ type joueurDonnees struct {
 	Reponses map[string]string `json:"-"`
 	Pret     bool              `json:"ready"`
 	Actif    bool              `json:"active"`
+	Conn     *websocket.Conn   `json:"-"`
 }
 
-type messageJeu struct {
+type Message struct {
 	Type     string            `json:"type"`
 	Nom      string            `json:"name"`
 	Reponses map[string]string `json:"answers"`
 }
 
-type paquetEtat struct {
-	Type           string          `json:"type"`
-	Lettre         string          `json:"letter"`
-	Categories     []string        `json:"categories"`
-	Joueurs        []joueurDonnees `json:"players"`
-	Secondes       int             `json:"remainingSeconds"`
-	MancheActive   bool            `json:"roundActive"`
-	Attente        bool            `json:"waitingRestart"`
-	CompteurPrets  int             `json:"readyCount"`
-	CompteurTotal  int             `json:"readyTotal"`
-	Actifs         int             `json:"activePlayers"`
-	NumeroManche   int             `json:"roundNumber"`
-	LimiteManches  int             `json:"roundLimit"`
-	JeuTermine     bool            `json:"gameOver"`
-	TempsParManche int             `json:"roundDuration"`
+type GameState struct {
+	Type           string    `json:"type"`
+	Lettre         string    `json:"letter"`
+	Categories     []string  `json:"categories"`
+	Joueurs        []Player  `json:"players"`
+	Secondes       int       `json:"remainingSeconds"`
+	MancheActive   bool      `json:"roundActive"`
+	Attente        bool      `json:"waitingRestart"`
+	CompteurPrets  int       `json:"readyCount"`
+	CompteurTotal  int       `json:"readyTotal"`
+	Actifs         int       `json:"activePlayers"`
+	NumeroManche   int       `json:"roundNumber"`
+	LimiteManches  int       `json:"roundLimit"`
+	JeuTermine     bool      `json:"gameOver"`
+	TempsParManche int       `json:"roundDuration"`
 }
 
-type donneesPage struct {
+type PageData struct {
 	Lettre          string
 	Categories      []string
 	TempsParManche  int
@@ -47,18 +48,19 @@ type donneesPage struct {
 	SalonCode       string
 }
 
-type reglageJeu struct {
+type GameConfig struct {
 	Categories []string `json:"categories"`
 	Temps      int      `json:"temps"`
 	Manches    int      `json:"manches"`
 }
 
-type salon struct {
+type Room struct {
 	code            string
-	mu              sync.Mutex
-	reglages        reglageJeu
+	mu              sync.RWMutex
+	reglages        GameConfig
 	lettreActu      rune
-	joueurs         map[*websocket.Conn]*joueurDonnees
+	players         map[string]*Player
+	connections     map[*websocket.Conn]string
 	tempsRest       int
 	mancheEnCours   bool
 	attenteVotes    bool
@@ -67,7 +69,7 @@ type salon struct {
 	compteurJoueurs int
 }
 
-type salonManager struct {
-	mu     sync.RWMutex
-	salons map[string]*salon
-}
+var (
+	rooms   = make(map[string]*Room)
+	roomsMu sync.RWMutex
+)

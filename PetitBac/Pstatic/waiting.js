@@ -41,7 +41,7 @@ function connecterSalle() {
         return;
     }
     const proto = (window.location.protocol === "https:") ? "wss://" : "ws://";
-    const url = proto + window.location.host + "/ws?room=" + encodeURIComponent(code);
+    const url = proto + window.location.host + "/PetitBac/ws?room=" + encodeURIComponent(code);
     waitingSocket = new WebSocket(url);
 
     waitingSocket.onopen = function () {

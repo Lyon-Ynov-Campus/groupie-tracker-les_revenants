@@ -7,45 +7,51 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func newSalon(code string) *salon {
-	return &salon{
-		code:       normalizeSalonCode(code),
-		reglages:   reglageJeu{Categories: listeCategories(), Temps: 90, Manches: 5},
-		lettreActu: lettreAleatoire(),
-		joueurs:    make(map[*websocket.Conn]*joueurDonnees),
+func newRoom(code string) *Room {
+	return &Room{
+		code:        normalizeRoomCode(code),
+		reglages:    GameConfig{Categories: listeCategories(), Temps: 90, Manches: 5},
+		lettreActu:  lettreAleatoire(),
+		players:     make(map[string]*Player),
+		connections: make(map[*websocket.Conn]string),
 	}
 }
 
-func normalizeSalonCode(code string) string {
-	code = strings.TrimSpace(strings.ToUpper(code))
-	return code
+func normalizeRoomCode(code string) string {
+	return strings.TrimSpace(strings.ToUpper(code))
 }
 
-func (s *salon) hasRoom() bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return len(s.joueurs) < maxSalonPlayers
+func (r *Room) hasRoom() bool {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	return len(r.players) < maxSalonPlayers
 }
 
-func (s *salon) addPlayer(conn *websocket.Conn) (*joueurDonnees, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if len(s.joueurs) >= maxSalonPlayers {
+func (r *Room) addPlayer(conn *websocket.Conn) (*Player, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if len(r.players) >= maxSalonPlayers {
 		return nil, fmt.Errorf("salon plein (max %d joueurs)", maxSalonPlayers)
 	}
-	s.compteurJoueurs++
-	j := &joueurDonnees{
-		ID:       fmt.Sprintf("j-%s-%d", strings.ToLower(s.code), s.compteurJoueurs),
+	r.compteurJoueurs++
+	playerID := fmt.Sprintf("j-%s-%d", strings.ToLower(r.code), r.compteurJoueurs)
+	player := &Player{
+		ID:       playerID,
 		Nom:      "Anonyme",
 		Reponses: make(map[string]string),
-		Actif:    s.mancheEnCours && !s.termine,
+		Actif:    r.mancheEnCours && !r.termine,
+		Conn:     conn,
 	}
-	s.joueurs[conn] = j
-	return j, nil
+	r.players[playerID] = player
+	r.connections[conn] = playerID
+	return player, nil
 }
 
-func (s *salon) removePlayer(conn *websocket.Conn) {
-	s.mu.Lock()
-	delete(s.joueurs, conn)
-	s.mu.Unlock()
+func (r *Room) removePlayer(conn *websocket.Conn) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if id, ok := r.connections[conn]; ok {
+		delete(r.players, id)
+		delete(r.connections, conn)
+	}
 }

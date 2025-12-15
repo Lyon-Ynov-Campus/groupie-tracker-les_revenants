@@ -5,15 +5,15 @@ import (
 	"strings"
 )
 
-func (s *salon) scoresFin() {
-	s.mu.Lock()
-	if len(s.joueurs) == 0 {
-		s.mu.Unlock()
+func (r *Room) scoresFin() {
+	r.mu.Lock()
+	if len(r.players) == 0 {
+		r.mu.Unlock()
 		return
 	}
 	tous := []map[string]string{}
-	ordre := []*joueurDonnees{}
-	for _, j := range s.joueurs {
+	ordre := []*Player{}
+	for _, j := range r.players {
 		if j.Actif {
 			tous = append(tous, j.Reponses)
 			ordre = append(ordre, j)
@@ -21,20 +21,20 @@ func (s *salon) scoresFin() {
 			j.Score = 0
 		}
 	}
-	cats := append([]string(nil), s.reglages.Categories...)
-	lettre := s.lettreActu
-	s.mu.Unlock()
+	cats := append([]string(nil), r.reglages.Categories...)
+	lettre := r.lettreActu
+	r.mu.Unlock()
 
 	points := scoresCollectifs(tous, cats, lettre)
 
-	s.mu.Lock()
+	r.mu.Lock()
 	for i, j := range ordre {
 		if i < len(points) {
 			j.Score = points[i]
 			j.Total += points[i]
 		}
 	}
-	s.mu.Unlock()
+	r.mu.Unlock()
 }
 
 func listeCategories() []string {

@@ -52,11 +52,7 @@ func RegisterRoutes(
 		return fmt.Errorf("impossible de charger PetitBac/templates/ptitbac_waiting.html: %w", err)
 	}
 	if err := initPetitBacStore(); err != nil {
-
 		return fmt.Errorf("initialisation base PetitBac: %w", err)
-
-		return fmt.Errorf("initialisation base Petit Bac: %w", err)
-
 	}
 
 	http.HandleFunc("/PetitBac", authMiddleware(pagePetitBacHome))
@@ -67,13 +63,13 @@ func RegisterRoutes(
 	http.HandleFunc("/PetitBac/play", authMiddleware(pageJeu))
 	http.HandleFunc("/PetitBac/rooms/players", authMiddleware(handleRoomPlayers))
 	http.HandleFunc("/PetitBac/rooms/start", authMiddleware(handleStartGame))
-	http.HandleFunc("/ws", socketJeu)
-	http.HandleFunc("/config", configJeu)
+	http.HandleFunc("/PetitBac/ws", authMiddleware(socketJeu))
+	http.HandleFunc("/PetitBac/config", authMiddleware(configJeu))
 	registerSalonHandlers(authMiddleware)
 
 	fsJeu := http.FileServer(http.Dir("PetitBac/Pstatic"))
 	http.Handle("/Pstatic/", http.StripPrefix("/Pstatic/", fsJeu))
 
-	salons.defaultSalon().demarrerManche(false)
+	defaultRoom().demarrerManche(false)
 	return nil
 }
