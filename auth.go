@@ -114,55 +114,57 @@ func pageRegister(w http.ResponseWriter, r *http.Request) {
 }
 
 func pageLogin(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		tmpl, err := template.ParseFiles("web/login.html")
-		if err != nil {
-			log.Println(err)
-			http.Error(w, "Erreur serveur", 500)
-			return
-		}
-		tmpl.Execute(w, nil)
-		return
-	}
+    if r.Method == http.MethodGet {
+        tmpl, err := template.ParseFiles("web/login.html")
+        if err != nil {
+            log.Println(err)
+            http.Error(w, "Erreur serveur", 500)
+            return
+        }
+        tmpl.Execute(w, nil)
+        return
+    }
 
-	if r.Method == http.MethodPost {
-		identifier := strings.TrimSpace(r.FormValue("identifier"))
-		password := r.FormValue("password")
+    if r.Method == http.MethodPost {
+        identifier := strings.TrimSpace(r.FormValue("identifier"))
+        password := r.FormValue("password")
 
-		if identifier == "" || password == "" {
-			http.Error(w, "Tous les champs sont requis", 400)
-			return
-		}
+        if identifier == "" || password == "" {
+            http.Redirect(w, r, "/login?error=1", http.StatusSeeOther)
+            return
+        }
 
-		var user User
-		err := db.QueryRow("SELECT id, pseudo, email, password FROM users WHERE pseudo = ? OR email = ?", identifier, identifier).Scan(&user.ID, &user.Pseudo, &user.Email, &user.Password)
-		if err != nil {
-			http.Error(w, "Identifiant ou mot de passe incorrect", 401)
-			return
-		}
+        var user User
+        err := db.QueryRow("SELECT id, pseudo, email, password FROM users WHERE pseudo = ? OR email = ?", identifier, identifier).Scan(&user.ID, &user.Pseudo, &user.Email, &user.Password)
+        
+        if err != nil {
+            http.Redirect(w, r, "/login?error=1", http.StatusSeeOther)
+            return
+        }
 
-		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-		if err != nil {
-			http.Error(w, "Identifiant ou mot de passe incorrect", 401)
-			return
-		}
+        err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+        
+        if err != nil {
+            http.Redirect(w, r, "/login?error=1", http.StatusSeeOther)
+            return
+        }
 
-		sessionToken := generateSessionToken()
-		sessions[sessionToken] = Session{
-			UserID:    user.ID,
-			ExpiresAt: time.Now().Add(24 * time.Hour),
-		}
+        sessionToken := generateSessionToken()
+        sessions[sessionToken] = Session{
+            UserID:    user.ID,
+            ExpiresAt: time.Now().Add(24 * time.Hour),
+        }
 
-		http.SetCookie(w, &http.Cookie{
-			Name:     "session_token",
-			Value:    sessionToken,
-			Expires:  time.Now().Add(24 * time.Hour),
-			HttpOnly: true,
-			Path:     "/",
-		})
+        http.SetCookie(w, &http.Cookie{
+            Name:     "session_token",
+            Value:    sessionToken,
+            Expires:  time.Now().Add(24 * time.Hour),
+            HttpOnly: true,
+            Path:     "/",
+        })
 
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-	}
+        http.Redirect(w, r, "/", http.StatusSeeOther)
+    }
 }
 
 func pageLogout(w http.ResponseWriter, r *http.Request) {

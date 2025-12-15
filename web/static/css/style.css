@@ -337,3 +337,16 @@ body {
     margin-right: 20px;
     font-weight: bold;
 }
+
+.alert-box {
+    background-color: #ffe6e6;
+    color: #d8000c;
+    border: 1px solid #ffb3b3;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    text-align: center;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}

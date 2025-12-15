@@ -27,6 +27,10 @@
             <div class="boite-connexion">
                 <h2 class="titre-connexion">CONNEXION</h2>
                 
+                <div id="error-message" class="alert-box" style="display: none;">
+                    ⚠️ Identifiant ou mot de passe incorrect
+                </div>
+
                 <form method="POST" action="/login" class="formulaire">
                     <div class="champ">
                         <label for="identifier">Pseudo ou Email</label>
@@ -51,8 +55,16 @@
 
     <script>
         var params = new URLSearchParams(window.location.search);
+        
         if (params.get('success') === 'registered') {
             alert('Compte créé ! Tu peux te connecter.');
+        }
+
+        if (params.get('error') === '1') {
+            var errorBox = document.getElementById('error-message');
+            errorBox.style.display = 'block';
+
+            window.history.replaceState({}, document.title, window.location.pathname);
         }
     </script>
 </body>

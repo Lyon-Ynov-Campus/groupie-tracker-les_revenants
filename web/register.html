@@ -6,7 +6,7 @@
     <title>Inscription</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/auth.css">
-</head>
+    </head>
 <body>
 
     <div class="site-entier">
@@ -15,9 +15,7 @@
             <div class="logo-zone">
                 <img src="/static/img/logo.png" alt="Logo" class="logo-img">
             </div>
-
             <h1 class="titre-principal">GROUPIE TRACKER</h1>
-
             <div class="liens-droite">
                 <a href="/" class="bouton-blanc">RETOUR</a>
             </div>
@@ -27,6 +25,8 @@
             <div class="boite-connexion">
                 <h2 class="titre-connexion">INSCRIPTION</h2>
                 
+                <div id="error-message" class="alert-box" style="display: none;"></div>
+
                 <form method="POST" action="/register" class="formulaire" id="registerForm">
                     <div class="champ">
                         <label for="pseudo">Pseudo</label>
@@ -66,33 +66,55 @@
         </div>
     </div>
 
-
     <script>
+        const errorBox = document.getElementById('error-message');
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        const errorType = urlParams.get('error');
+        if (errorType) {
+            errorBox.style.display = 'block';
+            
+            if (errorType === 'exists') {
+                errorBox.innerText = "⚠️ Ce pseudo ou cet email est déjà utilisé !";
+            } else if (errorType === 'match') {
+                errorBox.innerText = "⚠️ Les mots de passe ne correspondent pas.";
+            } else if (errorType === 'password') {
+                errorBox.innerText = "⚠️ Le mot de passe ne respecte pas les règles de sécurité.";
+            } else if (errorType === 'email') {
+                errorBox.innerText = "⚠️ Adresse email invalide.";
+            } else {
+                errorBox.innerText = "⚠️ Une erreur est survenue. Vérifie tes informations.";
+            }
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             var password = document.getElementById('password').value;
             var confirmPassword = document.getElementById('confirm_password').value;
+            let errorText = "";
 
             if (password !== confirmPassword) {
-                e.preventDefault();
-                alert('Les mots de passe ne sont pas pareils !');
-                return;
+                errorText = "Les mots de passe ne sont pas pareils !";
+            } 
+            else if (password.length < 12) {
+                errorText = "Mot de passe trop court (12 caractères min).";
+            }
+            else {
+                var hasUpper = /[A-Z]/.test(password);
+                var hasLower = /[a-z]/.test(password);
+                var hasNumber = /[0-9]/.test(password);
+                var hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+                if (!hasUpper || !hasLower || !hasNumber || !hasSpecial) {
+                    errorText = "Il manque une majuscule, minuscule, chiffre ou signe spécial.";
+                }
             }
 
-            if (password.length < 12) {
+            if (errorText) {
                 e.preventDefault();
-                alert('Mot de passe trop court (12 caractères min).');
-                return;
-            }
-
-            var hasUpper = /[A-Z]/.test(password);
-            var hasLower = /[a-z]/.test(password);
-            var hasNumber = /[0-9]/.test(password);
-            var hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-            if (!hasUpper || !hasLower || !hasNumber || !hasSpecial) {
-                e.preventDefault();
-                alert('Il faut une majuscule, une minuscule, un chiffre et un signe spécial.');
-                return;
+                errorBox.style.display = 'block';
+                errorBox.innerText = "⚠️ " + errorText;
+                window.scrollTo(0, 0);
             }
         });
     </script>
