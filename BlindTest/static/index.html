@@ -4,68 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BlindTest - Quiz Musical Multijoueur</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <link rel="stylesheet" href="/blindtest/static/style.css">
-    <style>
-        .game-header-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            padding: 1rem 2rem;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            z-index: 10000;
-            gap: 1rem;
-        }
-        .user-display-header {
-            color: #ff69b4;
-            font-weight: bold;
-            font-size: 0.95rem;
-        }
-        .btn-header-logout {
-            padding: 0.5rem 1rem;
-            background: #ff1493;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        .btn-header-logout:hover {
-            background: #ff69b4;
-        }
-        .btn-header-home {
-            padding: 0.5rem 1rem;
-            background: #89cff0;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        .btn-header-home:hover {
-            background: #6bb3d6;
-        }
-        body {
-            padding-top: 60px;
-        }
-    </style>
-    
-    <script src="/blindtest/static/app.js" defer></script>
+    <link rel="stylesheet" href="/blindtest/static/css/style.css">
 </head>
 <body>
-    <div class="game-header-nav">
-        <a href="/" class="btn-header-home">Accueil</a>
-        <span class="user-display-header" id="userDisplayHeader"></span>
-        <a href="/logout" class="btn-header-logout">Déconnexion</a>
-    </div>
-    
     <div id="particles"></div>
     
     <div class="container">
@@ -177,29 +118,14 @@
             <div class="end-content">
                 <h2>🏆 Partie terminée !</h2>
                 <div class="podium"><div id="results-container"></div></div>
-                <button id="back-home-btn" class="btn btn-primary">Retour à l'accueil</button>
+                <div class="end-buttons">
+                    <button id="replay-btn" class="btn btn-primary">Relancer une partie</button>
+                    <button id="back-home-btn" class="btn btn-secondary">Retour au menu principal</button>
+                </div>
             </div>
         </div>
     </div>
     
-    <script>
-        async function loadUserInfo() {
-            try {
-                const response = await fetch('/api/user');
-                const data = await response.json();
-                
-                if (data.authenticated) {
-                    const userDisplay = document.getElementById('userDisplayHeader');
-                    if (userDisplay) {
-                        userDisplay.textContent = `Salut, ${data.pseudo} 🎀`;
-                    }
-                }
-            } catch (error) {
-                console.error('Erreur lors du chargement des informations utilisateur:', error);
-            }
-        }
-        
-        loadUserInfo();
-    </script>
-    </body>
+    <script src="/blindtest/static/js/app.js" defer></script>
+</body>
 </html>
