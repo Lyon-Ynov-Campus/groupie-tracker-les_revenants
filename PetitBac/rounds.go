@@ -70,6 +70,9 @@ func (r *Room) demarrerManche(selection bool) {
 	r.lettreActu = lettreAleatoire()
 	r.tempsRest = r.reglages.Temps
 	r.mancheEnCours, r.attenteVotes, r.termine = true, false, false
+	r.validationActive = false
+	r.validationEntries = nil
+	r.validationIndex = 0
 	r.mu.Unlock()
 
 	go r.compteRebours()
@@ -91,9 +94,7 @@ func (r *Room) compteRebours() {
 		if r.tempsRest == 0 {
 			r.mancheEnCours = false
 			r.mu.Unlock()
-			r.scoresFin()
-			r.modeAttente()
-			r.envoyerEtat()
+			r.startValidationPhase()
 			return
 		}
 		r.mu.Unlock()
@@ -110,9 +111,7 @@ func (r *Room) finMancheRemplie() {
 	r.mancheEnCours = false
 	r.tempsRest = 0
 	r.mu.Unlock()
-	r.scoresFin()
-	r.modeAttente()
-	r.envoyerEtat()
+	r.startValidationPhase()
 }
 
 func (r *Room) modeAttente() {
@@ -124,6 +123,9 @@ func (r *Room) modeAttente() {
 	}
 	r.attenteVotes = true
 	r.tempsRest = 0
+	r.validationActive = false
+	r.validationEntries = nil
+	r.validationIndex = 0
 	for _, j := range r.players {
 		j.Actif = false
 		j.Pret = false

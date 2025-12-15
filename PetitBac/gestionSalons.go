@@ -49,9 +49,20 @@ func (r *Room) addPlayer(conn *websocket.Conn) (*Player, error) {
 
 func (r *Room) removePlayer(conn *websocket.Conn) {
 	r.mu.Lock()
-	defer r.mu.Unlock()
+	finalize := false
 	if id, ok := r.connections[conn]; ok {
+		player := r.players[id]
+		wasActive := false
+		if player != nil {
+			wasActive = player.Actif
+		}
 		delete(r.players, id)
 		delete(r.connections, conn)
+		finalize = r.adjustValidationOnLeaveLocked(id, wasActive)
+	}
+	r.mu.Unlock()
+
+	if finalize {
+		r.modeAttente()
 	}
 }

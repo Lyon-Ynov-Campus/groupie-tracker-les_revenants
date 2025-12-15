@@ -58,6 +58,12 @@ func (r *Room) boucleWS(conn *websocket.Conn) {
 				r.envoyerEtat()
 				continue
 			}
+		case "validate":
+			validationID := msg.ValidationID
+			voterID := player.ID
+			r.mu.Unlock()
+			r.handleValidationVote(voterID, msg.Approve, validationID)
+			continue
 		}
 		r.mu.Unlock()
 		r.envoyerEtat()
@@ -92,6 +98,33 @@ func (r *Room) envoyerEtat() {
 	}
 	etat.Joueurs = liste
 	etat.CompteurTotal = len(r.players)
+	if r.validationActive {
+		etat.ValidationActive = true
+		pending := len(r.validationEntries) - r.validationIndex
+		if pending < 0 {
+			pending = 0
+		}
+		etat.ValidationPending = pending
+		if r.validationIndex < len(r.validationEntries) {
+			entry := r.validationEntries[r.validationIndex]
+			copyApprovals := make(map[string]bool, len(entry.Approvals))
+			for id, v := range entry.Approvals {
+				copyApprovals[id] = v
+			}
+			etat.ValidationEntry = &ValidationDisplay{
+				ID:        entry.ID,
+				PlayerID:  entry.PlayerID,
+				PlayerNom: entry.PlayerNom,
+				Category:  entry.Category,
+				Answer:    entry.Answer,
+				Required:  entry.Required,
+				Votes:     len(entry.Approvals),
+				Approvals: copyApprovals,
+				Accepted:  entry.Accepted,
+				Completed: entry.Completed,
+			}
+		}
+	}
 	r.mu.RUnlock()
 
 	persistPlayersSnapshot(r.code, liste)

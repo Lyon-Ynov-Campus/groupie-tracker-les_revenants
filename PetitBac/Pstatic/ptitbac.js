@@ -7,6 +7,16 @@ let pseudoEnvoyeAuto = false;
 const urlParams = new URLSearchParams(window.location.search);
 const body = document.body || document.getElementsByTagName("body")[0];
 const salonCode = (urlParams.get("room") || (body ? body.getAttribute("data-room-code") : "") || "").trim().toUpperCase();
+let validationZone = null;
+let validationPlayer = null;
+let validationCategory = null;
+let validationAnswer = null;
+let validationVotes = null;
+let validationPending = null;
+let validationInfo = null;
+let btnValidateAccept = null;
+let btnValidateReject = null;
+let currentValidationId = null;
 
 function renseignerPseudoAuto(pseudo) {
     if (!pseudo) {
@@ -109,6 +119,90 @@ function mettreAJourPreparation(etat, monJoueur) {
     bouton.disabled = !!(monJoueur && monJoueur.ready);
 }
 
+function mettreAJourValidation(etat, monJoueur) {
+    if (!validationZone) {
+        return;
+    }
+    if (!etat.validationActive || !etat.validationEntry) {
+        validationZone.style.display = "none";
+        currentValidationId = null;
+        if (validationInfo) {
+            validationInfo.textContent = "";
+        }
+        return;
+    }
+
+    const entry = etat.validationEntry;
+    validationZone.style.display = "block";
+    currentValidationId = entry.id;
+
+    if (validationPlayer) {
+        validationPlayer.textContent = entry.playerName || "Anonyme";
+    }
+    if (validationCategory) {
+        validationCategory.textContent = entry.category || "";
+    }
+    if (validationAnswer) {
+        validationAnswer.textContent = entry.answer || "";
+    }
+    if (validationVotes) {
+        const votes = entry.votes || 0;
+        const required = entry.required || 0;
+        validationVotes.textContent = `${votes}/${required} validation(s) requises`;
+    }
+    if (validationPending) {
+        const restants = Math.max(0, (etat.validationPending || 0) - 1);
+        validationPending.textContent = restants > 0 ? `${restants} reponse(s) restantes apres celle-ci.` : "Derniere reponse a valider.";
+    }
+
+    const approvals = entry.approvals || {};
+    const hasVoted = identifiantClient ? approvals[identifiantClient] : false;
+    const targetId = entry.playerId;
+    const peutVoter = Boolean(
+        monJoueur &&
+        monJoueur.active &&
+        !etat.roundActive &&
+        identifiantClient &&
+        identifiantClient !== targetId &&
+        !hasVoted &&
+        !entry.completed
+    );
+
+    if (btnValidateAccept) {
+        btnValidateAccept.disabled = !peutVoter;
+    }
+    if (btnValidateReject) {
+        btnValidateReject.disabled = !peutVoter;
+    }
+
+    if (validationInfo) {
+        if (peutVoter) {
+            validationInfo.textContent = "Valide ou refuse la reponse proposee.";
+        } else if (identifiantClient === targetId) {
+            validationInfo.textContent = "Tu ne votes pas sur tes propres reponses.";
+        } else if (!monJoueur || !monJoueur.active) {
+            validationInfo.textContent = "Seuls les joueurs actifs de la manche votent.";
+        } else if (hasVoted) {
+            validationInfo.textContent = "Vote enregistre. En attente des autres joueurs.";
+        } else if (entry.completed) {
+            validationInfo.textContent = entry.accepted ? "Reponse acceptee." : "Reponse refusee.";
+        } else {
+            validationInfo.textContent = "En attente des autres joueurs.";
+        }
+    }
+}
+
+function envoyerValidationVote(approve) {
+    if (!socket || socket.readyState !== WebSocket.OPEN || currentValidationId === null) {
+        return;
+    }
+    socket.send(JSON.stringify({
+        type: "validate",
+        validationId: currentValidationId,
+        approve: approve
+    }));
+}
+
 function mettreAJourEtat(etat) {
     const lettreSpan = document.getElementById("lettre-affichee");
     if (lettreSpan) {
@@ -169,6 +263,7 @@ function mettreAJourEtat(etat) {
     }
 
     mettreAJourPreparation(etat, monJoueur);
+    mettreAJourValidation(etat, monJoueur);
 
     const tbody = document.getElementById("scores-body");
     if (!tbody) {
@@ -226,6 +321,27 @@ async function loadUserInfo() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+    validationZone = document.getElementById("validation-zone");
+    validationPlayer = document.getElementById("validation-player");
+    validationCategory = document.getElementById("validation-category");
+    validationAnswer = document.getElementById("validation-answer");
+    validationVotes = document.getElementById("validation-votes");
+    validationPending = document.getElementById("validation-pending");
+    validationInfo = document.getElementById("validation-info");
+    btnValidateAccept = document.getElementById("btn-validate-accept");
+    btnValidateReject = document.getElementById("btn-validate-reject");
+
+    if (btnValidateAccept) {
+        btnValidateAccept.addEventListener("click", function () {
+            envoyerValidationVote(true);
+        });
+    }
+    if (btnValidateReject) {
+        btnValidateReject.addEventListener("click", function () {
+            envoyerValidationVote(false);
+        });
+    }
+
     connecterWebSocket();
     loadUserInfo();
 
