@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlindTest - Quiz Musical Multijoueur</title>
+    <link rel="stylesheet" href="/blindtest/static/css/style.css">
+</head>
+<body>
+    <div id="particles"></div>
+    
+    <div class="container">
+        <div id="home-screen" class="screen active">
+            <div class="logo">
+                <h1>🎵 BlindTest</h1>
+                <p class="tagline">Quiz musical multijoueur en ligne</p>
+            </div>
+            <div class="menu">
+                <input type="text" id="username-input" placeholder="Entrez votre pseudo" maxlength="20" />
+                <button id="create-room-btn" class="btn btn-primary">Créer une partie</button>
+                <div class="divider">ou</div>
+                <input type="text" id="room-code-input" placeholder="Code de la room" maxlength="6" />
+                <button id="join-room-btn" class="btn btn-secondary">Rejoindre une partie</button>
+            </div>
+        </div>
+
+        <div id="config-screen" class="screen">
+            <div class="config-header"><h2>Configuration de la partie</h2></div>
+            <div class="config-content">
+                <div class="config-group">
+                    <label for="playlist-select">Playlist:</label>
+                    <select id="playlist-select" class="config-select">
+                        <option value="generale">Générale (Tous genres)</option>
+                        <option value="francaise">Française</option>
+                        <option value="pop">Pop</option>
+                        <option value="rock">Rock</option>
+                        <option value="rap">Rap / Hip-Hop</option>
+                        <option value="electronic">Electronic / Dance</option>
+                        <option value="indie">Indie Rock</option>
+                        <option value="classic">Classique</option>
+                        <option value="country">Country</option>
+                        <option value="jazz">Jazz</option>
+                        <option value="blues">Blues</option>
+                        <option value="reggae">Reggae</option>
+                        <option value="rnb">R&B</option>
+                        <option value="soul">Soul & Funk</option>
+                        <option value="metal">Metal</option>
+                        <option value="alternative">Alternative</option>
+                        <option value="latin">Latino</option>
+                        <option value="techno">Techno</option>
+                    </select>
+                    <p id="genre-description" class="genre-description">Un mélange de tous les genres musicaux</p>
+                </div>
+                <div class="config-group">
+                    <label>Nombre de manches:</label>
+                    <input type="number" id="rounds-input" class="config-input" value="5" min="1" max="20" />
+                </div>
+                <div class="config-group">
+                    <label>Temps par manche (s):</label>
+                    <input type="number" id="time-input" class="config-input" value="30" min="10" max="60" />
+                </div>
+                <div class="config-group">
+                    <input type="text" id="config-username" class="config-input" readonly />
+                </div>
+                <div class="config-buttons">
+                    <button id="confirm-config-btn" class="btn btn-primary">Lancer</button>
+                    <button id="cancel-config-btn" class="btn btn-secondary">Retour</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="lobby-screen" class="screen">
+            <div class="lobby-header">
+                <h2>Room: <span id="room-code"></span></h2>
+                <button id="leave-room-btn" class="btn btn-small">Quitter</button>
+            </div>
+            <div class="players-list">
+                <h3>Joueurs</h3>
+                <div id="players-container"></div>
+            </div>
+            <button id="ready-btn" class="btn btn-primary">Prêt !</button>
+            <p class="waiting-text">En attente...</p>
+        </div>
+
+        <div id="game-screen" class="screen">
+            <div class="game-header">
+                <div class="round-info">Round <span id="current-round">1</span>/<span id="max-rounds">10</span></div>
+                <div class="timer"><div id="timer-bar" class="timer-bar"></div></div>
+            </div>
+            <div class="music-player">
+                <div class="vinyl-container">
+                    <div class="vinyl" id="vinyl"></div>
+                    <div class="vinyl-center"></div>
+                </div>
+                <audio id="audio-player"></audio>
+            </div>
+            <div class="answer-section">
+                <input type="text" id="answer-input" placeholder="Titre ou artiste..." />
+                <button id="submit-answer-btn" class="btn btn-primary">Répondre</button>
+            </div>
+            <div class="game-players"><div id="game-players-container"></div></div>
+            <div id="correct-notification" class="notification"></div>
+        </div>
+
+        <div id="round-end-screen" class="screen">
+            <div class="round-end-content">
+                <h2>Réponse :</h2>
+                <div class="track-info">
+                    <h3 id="track-title"></h3>
+                    <p id="track-artist"></p>
+                    <p id="track-album"></p>
+                </div>
+                <div id="round-players-container"></div>
+            </div>
+        </div>
+
+        <div id="end-screen" class="screen">
+            <div class="end-content">
+                <h2>🏆 Partie terminée !</h2>
+                <div class="podium"><div id="results-container"></div></div>
+                <div class="end-buttons">
+                    <button id="replay-btn" class="btn btn-primary">Relancer une partie</button>
+                    <button id="back-home-btn" class="btn btn-secondary">Retour au menu principal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/blindtest/static/js/app.js" defer></script>
+</body>
+</html>

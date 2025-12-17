@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Petit Bac - Salle d'attente</title>
+    <link rel="stylesheet" href="../Pstatic/styles.css">
+</head>
+<body class="pb-shell" data-room-code="{{.SalonCode}}">
+<header class="pb-header">
+    <div>
+        <p class="pb-tagline">Salon {{.SalonCode}}</p>
+        <h1 class="pb-title">Salle d'attente</h1>
+        <p class="pb-subtitle">Partage le code avec tes amis puis lance la partie quand tout le monde est la.</p>
+    </div>
+    <a class="btn-link" href="/PetitBac">Changer d'option</a>
+</header>
+
+<main class="pb-container waiting-room">
+    <section class="pb-card waiting-config">
+        <h2>Parametres retenus</h2>
+        <ul class="room-meta">
+            <li><strong>Code :</strong> {{.SalonCode}}</li>
+            <li><strong>Temps par manche :</strong> {{.TempsParManche}} secondes</li>
+            <li><strong>Nombre de manches :</strong> {{.NombreDeManches}}</li>
+        </ul>
+        <h3>Categories</h3>
+        <ul class="category-list">
+            {{range .Categories}}<li>{{.}}</li>{{end}}
+        </ul>
+        <p class="waiting-tip">Rappelle aux joueurs de conserver ce code pour rejoindre la partie plus tard.</p>
+    </section>
+
+    <section class="pb-card waiting-scoreboard">
+        <div class="waiting-header">
+            <h2>Joueurs connectes</h2>
+            <button id="btn-start" class="btn-option">Lancer la partie</button>
+        </div>
+        <p id="waiting-status" class="waiting-status">{{len .JoueursAttente}} joueur(s) connecte(s)</p>
+        <table class="tableau-petit-bac">
+            <thead>
+            <tr>
+                <th>Joueur</th>
+                <th>Score total</th>
+                <th>Statut</th>
+            </tr>
+            </thead>
+            <tbody id="waiting-scores">
+            {{if .JoueursAttente}}
+                {{range .JoueursAttente}}
+                <tr>
+                    <td>{{.Pseudo}}</td>
+                    <td>{{.Score}} pt{{if gt .Score 1}}s{{end}}</td>
+                    <td>En attente</td>
+                </tr>
+                {{end}}
+            {{else}}
+                <tr>
+                    <td colspan="3">Aucun joueur pour l'instant. Partage le code du salon !</td>
+                </tr>
+            {{end}}
+            </tbody>
+        </table>
+    </section>
+</main>
+
+<script src="/Pstatic/waiting.js"></script>
+</body>
+</html>

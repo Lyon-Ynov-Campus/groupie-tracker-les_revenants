@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Petit Bac - Reglages</title>
+    <link rel="stylesheet" href="/../Pstatic/styles.css">
+</head>
+<body class="pb-shell">
+<header class="pb-header">
+    <div>
+        <p class="pb-tagline">Creation de salon</p>
+        <h1 class="pb-title">Etape 2 - Temps et manches</h1>
+        <p class="pb-subtitle">Plus le chrono est court, plus la pression monte.</p>
+    </div>
+    <a class="btn-link" href="/PetitBac/create/categories">Modifier les categories</a>
+</header>
+
+<main class="pb-container steps">
+    <div class="pb-steps">
+        <span class="step done">1. Categories</span>
+        <span class="step active">2. Temps</span>
+        <span class="step">3. Lancement</span>
+    </div>
+
+    <form method="post" action="/PetitBac/create/time" class="pb-card" id="timeForm">
+        {{range .Categories}}<input type="hidden" name="categories" value="{{.}}">{{end}}
+        <div class="time-grid">
+            <div class="time-box">
+                <label for="duration">Temps par manche</label>
+                <select id="duration" name="duration">
+                    <option value="30" {{if eq .Duration 30}}selected{{end}}>30 secondes - ultra speed</option>
+                    <option value="45" {{if eq .Duration 45}}selected{{end}}>45 secondes - rythme nerveux</option>
+                    <option value="60" {{if eq .Duration 60}}selected{{end}}>60 secondes - standard</option>
+                    <option value="90" {{if eq .Duration 90}}selected{{end}}>90 secondes - chill</option>
+                </select>
+            </div>
+
+            <div class="time-box">
+                <label for="rounds">Nombre de manches</label>
+                <input type="number" id="rounds" name="rounds" min="3" max="10" value="{{.Rounds}}">
+                <small>Entre 3 et 10 pour garder du rythme</small>
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <h3>Recapitulatif</h3>
+            <p><strong>Categories selectionnees :</strong></p>
+            <ul class="category-summary-list">
+                {{range .Categories}}<li>{{.}}</li>{{end}}
+            </ul>
+            <p>Une fois valide, un code de salon sera genere et partage avec tous les joueurs.</p>
+        </div>
+
+        {{if .Error}}<p class="form-error">{{.Error}}</p>{{end}}
+
+        <div class="form-actions">
+            <a href="/PetitBac/create/categories" class="btn-option secondary">Etape precedente</a>
+            <button type="submit" class="btn-option">Creer le salon</button>
+        </div>
+    </form>
+</main>
+</body>
+</html>

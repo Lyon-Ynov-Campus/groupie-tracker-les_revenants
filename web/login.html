@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/auth.css">
+</head>
+<body>
+
+    <div class="site-entier">
+        
+        <div class="menu-haut">
+            <div class="logo-zone">
+                <img src="/static/img/logo.png" alt="Logo" class="logo-img">
+            </div>
+
+            <h1 class="titre-principal">GROUPIE TRACKER</h1>
+
+            <div class="liens-droite">
+                <a href="/" class="bouton-blanc">RETOUR</a>
+            </div>
+        </div>
+
+        <div class="zone-formulaire">
+            <div class="boite-connexion">
+                <h2 class="titre-connexion">CONNEXION</h2>
+                
+                <form method="POST" action="/login" class="formulaire">
+                    <div class="champ">
+                        <label for="identifier">Pseudo ou Email</label>
+                        <input type="text" id="identifier" name="identifier" required>
+                    </div>
+
+                    <div class="champ">
+                        <label for="password">Mot de passe</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+
+                    <button type="submit" class="bouton-valider">SE CONNECTER</button>
+                </form>
+
+                <p class="texte-bas">
+                    Pas encore de compte ? <a href="/register">Inscris-toi ici !</a>
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="bas-de-page">
+        <p>Site réalisé pour l'école</p>
+    </div>
+
+    <script>
+        var params = new URLSearchParams(window.location.search);
+        if (params.get('success') === 'registered') {
+            alert('Compte créé ! Tu peux te connecter.');
+        }
+    </script>
+</body>
+</html>

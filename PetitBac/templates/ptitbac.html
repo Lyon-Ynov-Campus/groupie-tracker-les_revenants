@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Petit Bac multijoueur - WebSocket</title>
+    <link rel="stylesheet" href="../Pstatic/styles.css">
+</head>
+<body data-room-code="{{.SalonCode}}">
+
+<div class="game-header">
+    <h1>Petit Bac multijoueur en temps reel</h1>
+    <div class="header-nav" id="headerNav">
+        <a href="/" class="btn-home">Accueil</a>
+        <span class="user-display" id="userDisplay"></span>
+        <a href="/logout" class="btn-logout">Deconnexion</a>
+    </div>
+</div>
+
+<section class="entete-lettre">
+    <p>
+        Lettre tiree :
+        <span class="cellule-lettre" id="lettre-affichee">{{.Lettre}}</span>
+    </p>
+    <p>
+        Temps restant :
+        <span id="timer-affiche">01:30</span>
+    </p>
+    <p class="info-manches" id="info-manches">Manche 1/5</p>
+</section>
+
+<section class="room-info">
+    <p>Code du salon : <strong id="room-code">{{.SalonCode}}</strong></p>
+</section>
+
+<section class="configuration-partie">
+    <h2>Parametres de la partie</h2>
+    <form id="config-form">
+        <div class="champ-config">
+            <label for="temps-manche">Temps par manche (secondes)</label>
+            <input type="number" id="temps-manche" min="15" value="{{.TempsParManche}}">
+        </div>
+        <div class="champ-config">
+            <label for="nb-manches">Nombre de manches</label>
+            <input type="number" id="nb-manches" min="1" value="{{.NombreDeManches}}">
+        </div>
+        <div class="champ-config">
+            <label for="categories-input">Categories (une par ligne)</label>
+            <textarea id="categories-input" rows="5">{{range .Categories}}{{.}}
+{{end}}</textarea>
+        </div>
+        <button type="submit" class="bouton-secondaire">Mettre a jour la partie</button>
+        <p id="config-message" class="config-message"></p>
+    </form>
+</section>
+
+<section class="zone-joueur">
+    <h2>Ton plateau</h2>
+
+    <form id="form-joueur">
+        <div class="entete-joueur">
+            <label for="pseudo">Pseudo</label>
+            <input type="text"
+                   id="pseudo"
+                   name="pseudo"
+                   class="champ-nom"
+                   placeholder="Entre ton pseudo">
+        </div>
+
+        <div class="section-reponses">
+            {{range $indice, $categorie := .Categories}}
+                <div class="case-reponse">
+                    <label for="cat{{$indice}}">{{$categorie}}</label>
+                    <input type="text"
+                           id="cat{{$indice}}"
+                           name="cat{{$indice}}"
+                           class="champ-categorie"
+                           data-categorie="{{$categorie}}"
+                           placeholder="Reponse...">
+                </div>
+            {{end}}
+        </div>
+
+        <button type="submit" class="bouton-principal" id="btn-send">Envoyer mes reponses</button>
+    </form>
+
+    <p id="message-manche" class="message-manche"></p>
+    <p class="info-validation">Rappel : une reponse rapporte un point uniquement si tous les joueurs actifs l'approuvent.</p>
+</section>
+
+<section class="validation-zone" id="validation-zone">
+    <h2>Validation des reponses</h2>
+    <p class="validation-tip">Tous les joueurs actifs doivent approuver chaque reponse pour qu'elle rapporte 1 point.</p>
+    <div class="validation-details">
+        <p><strong>Joueur :</strong> <span id="validation-player">-</span></p>
+        <p><strong>Categorie :</strong> <span id="validation-category">-</span></p>
+        <p><strong>Reponse :</strong> <span id="validation-answer">-</span></p>
+        <p><strong>Votes :</strong> <span id="validation-votes">0/0</span></p>
+        <p id="validation-pending"></p>
+    </div>
+    <div class="validation-actions">
+        <button type="button" class="bouton-secondaire" id="btn-validate-accept">Valider</button>
+        <button type="button" class="btn-refus" id="btn-validate-reject">Refuser</button>
+    </div>
+    <p id="validation-info" class="validation-info"></p>
+</section>
+
+<section class="zone-preparation" id="zone-preparation">
+    <h2>Relancer une partie</h2>
+    <p id="infos-preparation">Clique sur "Oui, je rejoue" pour voter la relance.</p>
+    <button type="button" class="bouton-secondaire" id="btn-ready">Oui, je rejoue</button>
+</section>
+
+<section class="resultats">
+    <h2>Scores des joueurs connectes</h2>
+    <table class="tableau-petit-bac" id="table-scores">
+        <thead>
+        <tr>
+            <th>Joueur</th>
+            <th>Score manche</th>
+            <th>Total global</th>
+            <th>Statut</th>
+        </tr>
+        </thead>
+        <tbody id="scores-body">
+        </tbody>
+    </table>
+</section>
+</body>
+
+<script src="/Pstatic/ptitbac.js"></script>
+
+</html>

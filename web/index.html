@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Groupie Tracker</title>
+    <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+
+    <div class="site-entier">
+        
+        <div class="menu-haut">
+            <div class="logo-zone">
+                <img src="static/img/logo.png" alt="Logo" class="logo-img">
+            </div>
+
+            <h1 class="titre-principal">HELLOKIBEAT</h1>
+
+            <div class="liens-droite" id="zone-login">
+                <a href="/login" class="bouton-blanc">CONNEXION</a>
+                <a href="/register" class="bouton-rose">S'INSCRIRE</a>
+            </div>
+        </div>
+
+        <div class="banniere-rose">
+            <div class="contenu-centre">
+                <h1 class="titre-geant">
+                    BIENVENUE ! 
+                    <img src="static/img/metal.png" alt="Icone" class="image-titre">
+                </h1>
+                
+                <a href="#jeux" class="bouton-geant">
+                    LANCER LE JEU MAINTENANT
+                </a>
+            </div>
+        </div>
+
+    </div> 
+
+    <div class="barre-noire">
+        <img src="static/img/heavy.png" class="img-deco" alt="Deco">
+        <p class="texte-metal">REJOINS LA COMMU LA PLUS CUTE DU MONDE !!</p>
+        <img src="static/img/heavy.png" class="img-deco" alt="Deco">
+    </div>
+
+    <div id="jeux" class="section-jeux">
+        <h2 class="titre-section">CHOISIS TON JEU</h2>
+        
+        <div class="liste-cartes">
+            <div class="carte bordure-rouge">
+                <img src="static/img/skull.png" alt="Crane" class="img-carte">
+                <h3>BLIND TEST</h3>
+                <p>C'est rapide et brutal.</p>
+                <a href="/BlindTest" class="bouton-action fond-rouge">JOUER</a>
+            </div>
+
+            <div class="carte bordure-bleue">
+                <img src="static/img/pentagram.png" alt="Etoile" class="img-carte">
+                <h3>PETIT BAC</h3>
+                <p>Trouve les mots cachés.</p>
+                <a href="/PetitBac" class="bouton-action fond-bleu">JOUER</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="pied-de-page">
+        <div class="contenu-pied">
+            
+            <div class="colonne-pied">
+                <h3>GROUPIE TRACKER</h3>
+                <p>Le meilleur site de tout les temps.<br> En toute modestie evidemment.</p>
+            </div>
+
+            <div class="colonne-pied">
+                <h3>LIENS UTILES</h3>
+                <a href="/login">Se connecter</a>
+                <a href="/register">Créer un compte</a>
+                <a href="#jeux">Nos jeux</a>
+            </div>
+
+            <div class="colonne-pied">
+                <h3>CONTACT</h3>
+                <p>Email : joaquin.cozette@ynov.com</p>
+                <p>Promo : 2025-2026</p>
+                <p>defaut : trop fort</p>
+            </div>
+
+        </div>
+        <div class="dev-bulles">
+            <div class="dev-bulle">
+                <img src="https://avatars.githubusercontent.com/u/231704126?v=4" alt="Photo de Ludivine GOIRAND">
+                <div class="dev-info">
+                    <p class="dev-name">Ludivine GOIRAND</p>
+                    <a href="https://github.com/ludivine25" target="_blank" rel="noopener noreferrer">Github</a>
+                </div>
+            </div>
+            <div class="dev-bulle">
+                <img src="https://avatars.githubusercontent.com/u/30826575?s=96&v=4" alt="Photo de Sébastien VALETTE">
+                <div class="dev-info">
+                    <p class="dev-name">Sébastien VALETTE</p>
+                    <a href="https://github.com/DeeW69" target="_blank" rel="noopener noreferrer">Github</a>
+                </div>
+            </div>
+        </div>
+        <div class="barre-copyright">
+            <p>&copy; 2025 - projet groupie tracker</p>
+        </div>
+    </div>
+
+    <script>
+        function verifierCompte() {
+            fetch('/api/user')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    var zone = document.getElementById('zone-login');
+                    if (data.authenticated) {
+                        zone.innerHTML = '<span class="pseudo-txt">Coucou ' + data.pseudo + '</span>' +
+                                         '<a href="/logout" class="bouton-blanc">Sortir</a>';
+                    }
+                })
+                .catch(function(err) { console.log("Pas connecté"); });
+        }
+        verifierCompte();
+    </script>
+
+</body>
+</html>
