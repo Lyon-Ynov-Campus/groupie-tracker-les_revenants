@@ -11,7 +11,7 @@ import (
 
 const (
 	defaultRoomCode = "CLASSIC"
-	roomCodeLength  = 6
+	roomCodeLength  = 5
 	maxSalonPlayers = 5
 )
 
